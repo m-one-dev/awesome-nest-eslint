@@ -1,0 +1,66 @@
+{
+  "name": "@m-one/awesome-nest-eslint",
+  "version": "1.0.0",
+  "description": "Opinionated ESLint plugin with NestJS-aware rules used across m-one projects.",
+  "license": "UNLICENSED",
+  "private": false,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-one/awesome-nest-eslint.git"
+  },
+  "publishConfig": {
+    "@m-one:registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:prod": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "yarn run clean && yarn run build && yarn run test"
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "nestjs",
+    "typeorm",
+    "m-one"
+  ],
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.56.0"
+  },
+  "peerDependencies": {
+    "@typescript-eslint/parser": ">=8",
+    "eslint": ">=9",
+    "typescript": ">=5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "@typescript-eslint/parser": "^8.56.0",
+    "@typescript-eslint/rule-tester": "^8.56.0",
+    "eslint": "^10.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.0"
+  }
+}
