@@ -287,9 +287,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@m-one/awesome-nest-eslint@workspace:.":
+"@m-one-dev/awesome-nest-eslint@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@m-one/awesome-nest-eslint@workspace:."
+  resolution: "@m-one-dev/awesome-nest-eslint@workspace:."
   dependencies:
     "@types/node": "npm:^25.2.3"
     "@typescript-eslint/parser": "npm:^8.56.0"

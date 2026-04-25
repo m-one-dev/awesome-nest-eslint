@@ -17,13 +17,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://npm.pkg.github.com
-          scope: '@m-one'
           cache: yarn
       - run: corepack prepare yarn@4.9.2 --activate
       - run: yarn install --immutable
+      - name: Verify version not yet published
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          PKG=$(node -p "require('./package.json').name")
+          if yarn npm info "$PKG@$VERSION" --json >/dev/null 2>&1; then
+            echo "::error::$PKG@$VERSION is already published. Bump the version before tagging."
+            exit 1
+          fi
       - run: yarn build
       - run: yarn test
       - run: yarn npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

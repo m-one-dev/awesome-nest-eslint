@@ -1,6 +1,6 @@
 {
-  "name": "@m-one/awesome-nest-eslint",
-  "version": "1.0.0",
+  "name": "@m-one-dev/awesome-nest-eslint",
+  "version": "1.0.1",
   "description": "Opinionated ESLint plugin with NestJS-aware rules used across m-one projects.",
   "license": "UNLICENSED",
   "type": "module",
@@ -23,20 +23,20 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/m-one/awesome-nest-eslint.git"
+    "url": "git+https://github.com/m-one-dev/awesome-nest-eslint.git"
   },
   "publishConfig": {
-    "@m-one:registry": "https://npm.pkg.github.com",
+    "registry": "https://npm.pkg.github.com",
     "access": "restricted"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build:prod": "tsc -p tsconfig.json",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "yarn run clean && yarn run build && yarn run test"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "keywords": [
     "eslint",

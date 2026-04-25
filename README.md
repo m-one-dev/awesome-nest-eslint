@@ -1,29 +1,29 @@
-# @m-one/awesome-nest-eslint
+# @m-one-dev/awesome-nest-eslint
 
 Opinionated ESLint plugin with NestJS-aware, TypeScript-aware rules used across m-one projects.
 
 ## Install
 
-This package is published to GitHub Packages under the `@m-one` scope. You need a GitHub PAT with `read:packages` to install.
+This package is published to GitHub Packages under the `@m-one-dev` scope. You need a GitHub PAT with `read:packages` to install.
 
 Add an `.npmrc` at the consumer repo root:
 
 ```
-@m-one:registry=https://npm.pkg.github.com
+@m-one-dev:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${GITHUB_PACKAGES_TOKEN}
 ```
 
 Then:
 
 ```bash
-yarn add -D @m-one/awesome-nest-eslint
+yarn add -D @m-one-dev/awesome-nest-eslint
 ```
 
 ## Usage (flat config)
 
 ```ts
 // eslint.config.ts
-import awesomeNest from '@m-one/awesome-nest-eslint';
+import awesomeNest from '@m-one-dev/awesome-nest-eslint';
 import { defineConfig } from 'eslint/config';
 
 export default defineConfig(
