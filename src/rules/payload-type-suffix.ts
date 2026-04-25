@@ -10,7 +10,7 @@ type MessageIds =
   | 'missingType'
   | 'paramNameMustBePayload';
 
-interface Options {
+export interface Options {
   allowedSuffixes?: string[];
   enforcePayloadParamName?: boolean;
 }

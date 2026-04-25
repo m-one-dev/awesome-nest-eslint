@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Opinionated ESLint plugin with NestJS-aware rules used across m-one projects.",
   "license": "UNLICENSED",
-  "private": false,
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -62,5 +61,6 @@
     "eslint": "^10.0.0",
     "typescript": "^5.9.3",
     "vitest": "^2.1.0"
-  }
+  },
+  "packageManager": "yarn@4.9.2"
 }
