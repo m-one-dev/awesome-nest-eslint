@@ -1,4 +1,2 @@
-# Copy to .npmrc and replace TOKEN with a GitHub PAT that has read:packages.
-# Required to install @m-one-dev/awesome-nest-eslint from GitHub Packages.
-@m-one-dev:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=TOKEN
+# Example .npmrc — copy to .npmrc and fill in if needed for local overrides.
+# For consuming this package from npmjs.com, no special config is required.

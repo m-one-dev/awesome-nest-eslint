@@ -4,18 +4,11 @@ Opinionated ESLint plugin with NestJS-aware, TypeScript-aware rules used across 
 
 ## Install
 
-This package is published to GitHub Packages under the `@m-one-dev` scope. You need a GitHub PAT with `read:packages` to install.
-
-Add an `.npmrc` at the consumer repo root:
-
-```
-@m-one-dev:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_PACKAGES_TOKEN}
-```
-
-Then:
-
 ```bash
+npm install -D @m-one-dev/awesome-nest-eslint
+# or
+pnpm add -D @m-one-dev/awesome-nest-eslint
+# or
 yarn add -D @m-one-dev/awesome-nest-eslint
 ```
 
@@ -69,18 +62,20 @@ Peer dependencies:
 ## Development
 
 ```bash
-yarn install
-yarn build
-yarn test
+pnpm install
+pnpm build
+pnpm test
 ```
 
 ## Releasing
 
-Releases are tag-driven. Bump and tag:
+Releases are tag-driven. Bump the version in `package.json`, commit, then tag:
 
 ```bash
-yarn version <patch|minor|major>
+git add package.json
+git commit -m "chore: bump version to x.y.z"
+git tag vx.y.z
 git push --follow-tags
 ```
 
-The `publish.yml` workflow runs `install → build → test → yarn npm publish` on every `v*` tag and pushes to GitHub Packages with the workflow `GITHUB_TOKEN`.
+The `publish.yml` workflow runs `install → build → test → pnpm publish` on every `v*` tag and pushes to npmjs.com using the `NPM_TOKEN` repository secret.

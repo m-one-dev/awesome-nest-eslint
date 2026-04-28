@@ -10,28 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
-      - run: corepack enable
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: yarn
-      - run: corepack prepare yarn@4.9.2 --activate
-      - run: yarn install --immutable
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+      - run: pnpm install --frozen-lockfile
       - name: Verify version not yet published
-        env:
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           PKG=$(node -p "require('./package.json').name")
-          if yarn npm info "$PKG@$VERSION" --json >/dev/null 2>&1; then
+          if pnpm view "$PKG@$VERSION" version >/dev/null 2>&1; then
             echo "::error::$PKG@$VERSION is already published. Bump the version before tagging."
             exit 1
           fi
-      - run: yarn build
-      - run: yarn test
-      - run: yarn npm publish
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm publish --access public --no-git-checks --provenance
         env:
-          YARN_NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
