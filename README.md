@@ -31,6 +31,7 @@ export default defineConfig(
 |---|---|---|
 | `awesome-nest/no-typeorm-finder-methods` | error | all |
 | `awesome-nest/payload-type-suffix` | error | all |
+| `awesome-nest/unique-endpoint-dtos` | error | all |
 | `awesome-nest/dto-must-extend-abstract-or-base` | error | `**/*.dto.ts`, `**/dto/**/*.ts` |
 
 `configs.all` enables every rule at error severity, no file scoping.
@@ -40,6 +41,7 @@ export default defineConfig(
 - [`awesome-nest/no-typeorm-finder-methods`](./docs/rules/no-typeorm-finder-methods.md) — bans TypeORM entity-read finders, auto-fixes to `createQueryBuilder` chains.
 - [`awesome-nest/dto-must-extend-abstract-or-base`](./docs/rules/dto-must-extend-abstract-or-base.md) — DTOs must transitively extend `AbstractDto` / `BaseDto`.
 - [`awesome-nest/payload-type-suffix`](./docs/rules/payload-type-suffix.md) — NATS payload types must end with `PayloadDto` / pagination DTO suffixes.
+- [`awesome-nest/unique-endpoint-dtos`](./docs/rules/unique-endpoint-dtos.md) — each endpoint slot (`@Body`, `@Query`, response) must use its own DTO across the project.
 
 ## Requirements
 
