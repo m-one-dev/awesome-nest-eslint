@@ -14,6 +14,7 @@ export function buildRecommended(
       rules: {
         [`${PLUGIN_NAME}/no-typeorm-finder-methods`]: 'error',
         [`${PLUGIN_NAME}/payload-type-suffix`]: 'error',
+        [`${PLUGIN_NAME}/unique-endpoint-dtos`]: 'error',
       },
     },
     {
