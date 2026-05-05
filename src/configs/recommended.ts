@@ -15,6 +15,8 @@ export function buildRecommended(
         [`${PLUGIN_NAME}/no-typeorm-finder-methods`]: 'error',
         [`${PLUGIN_NAME}/payload-type-suffix`]: 'error',
         [`${PLUGIN_NAME}/unique-endpoint-dtos`]: 'error',
+        [`${PLUGIN_NAME}/uuid-field-naming`]: 'error',
+        [`${PLUGIN_NAME}/no-unused-injectable`]: 'error',
         [`${PLUGIN_NAME}/prefer-promise-all`]: 'warn',
       },
     },

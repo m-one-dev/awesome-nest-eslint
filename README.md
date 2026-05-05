@@ -39,6 +39,7 @@ export default defineConfig(
 ## Rules
 
 - [`awesome-nest/no-typeorm-finder-methods`](./docs/rules/no-typeorm-finder-methods.md) — bans TypeORM entity-read finders, auto-fixes to `createQueryBuilder` chains.
+- [`awesome-nest/no-unused-injectable`](./docs/rules/no-unused-injectable.md) — flags `@Injectable()` services that are only registered in `@Module()` decorators (or nowhere) and never consumed.
 - [`awesome-nest/dto-must-extend-abstract-or-base`](./docs/rules/dto-must-extend-abstract-or-base.md) — DTOs must transitively extend `AbstractDto` / `BaseDto`.
 - [`awesome-nest/payload-type-suffix`](./docs/rules/payload-type-suffix.md) — NATS payload types must end with `PayloadDto` / pagination DTO suffixes.
 - [`awesome-nest/unique-endpoint-dtos`](./docs/rules/unique-endpoint-dtos.md) — each endpoint slot (`@Body`, `@Query`, response) must use its own DTO across the project.
