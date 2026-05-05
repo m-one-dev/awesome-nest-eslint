@@ -32,6 +32,7 @@ export default defineConfig(
 | `awesome-nest/no-typeorm-finder-methods` | error | all |
 | `awesome-nest/payload-type-suffix` | error | all |
 | `awesome-nest/unique-endpoint-dtos` | error | all |
+| `awesome-nest/uuid-field-naming` | error | all |
 | `awesome-nest/dto-must-extend-abstract-or-base` | error | `**/*.dto.ts`, `**/dto/**/*.ts` |
 
 `configs.all` enables every rule at error severity, no file scoping.
@@ -43,6 +44,7 @@ export default defineConfig(
 - [`awesome-nest/dto-must-extend-abstract-or-base`](./docs/rules/dto-must-extend-abstract-or-base.md) — DTOs must transitively extend `AbstractDto` / `BaseDto`.
 - [`awesome-nest/payload-type-suffix`](./docs/rules/payload-type-suffix.md) — NATS payload types must end with `PayloadDto` / pagination DTO suffixes.
 - [`awesome-nest/unique-endpoint-dtos`](./docs/rules/unique-endpoint-dtos.md) — each endpoint slot (`@Body`, `@Query`, response) must use its own DTO across the project.
+- [`awesome-nest/uuid-field-naming`](./docs/rules/uuid-field-naming.md) — fields/parameters/locals typed as the `Uuid` brand must end with `Id`; `Uuid[]` must end with `Ids`. Optional reverse direction (`enforceReverse`) enforces the inverse with a regex-based exempt list (`allowNonUuidNames`).
 
 ## Requirements
 
