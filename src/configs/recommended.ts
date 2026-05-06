@@ -1,6 +1,7 @@
 import type { TSESLint } from '@typescript-eslint/utils';
 
 import { rules } from '../rules/index.js';
+import { controllerFilesConfig, globalRuleOptions } from './rule-options.js';
 
 const PLUGIN_NAME = 'awesome-nest';
 
@@ -13,6 +14,11 @@ export function buildRecommended(
       plugins: { [PLUGIN_NAME]: plugin },
       rules: {
         [`${PLUGIN_NAME}/no-typeorm-finder-methods`]: 'error',
+        [`${PLUGIN_NAME}/prefer-raw-terminal-on-select`]: 'error',
+        [`${PLUGIN_NAME}/require-api-endpoint-docs`]: [
+          'error',
+          ...(globalRuleOptions['require-api-endpoint-docs'] ?? []),
+        ],
         [`${PLUGIN_NAME}/payload-type-suffix`]: 'error',
         [`${PLUGIN_NAME}/unique-endpoint-dtos`]: 'error',
         [`${PLUGIN_NAME}/uuid-field-naming`]: 'error',
@@ -33,6 +39,13 @@ export function buildRecommended(
       },
     },
     {
+      name: `${PLUGIN_NAME}/recommended-no-builtin-exception-instantiation`,
+      ignores: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/test/**'],
+      rules: {
+        [`${PLUGIN_NAME}/no-builtin-exception-instantiation`]: 'error',
+      },
+    },
+    {
       name: `${PLUGIN_NAME}/recommended-dto`,
       files: ['**/*.dto.ts', '**/dto/**/*.ts'],
       rules: {
@@ -46,6 +59,16 @@ export function buildRecommended(
       rules: {
         [`${PLUGIN_NAME}/require-use-dto-decorator`]: 'error',
       },
+    },
+    {
+      name: `${PLUGIN_NAME}/recommended-controller`,
+      files: [...controllerFilesConfig.files],
+      ignores: [...controllerFilesConfig.ignores],
+      rules: Object.fromEntries(
+        Object.entries(controllerFilesConfig.ruleOptions).map(
+          ([name, opts]) => [`${PLUGIN_NAME}/${name}`, ['error', ...opts!]],
+        ),
+      ),
     },
   ];
 }
