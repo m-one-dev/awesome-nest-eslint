@@ -1,8 +1,8 @@
 # `prefer-raw-terminal-on-select`
 
-Forces raw-row terminals (`getRawOne` / `getRawMany`) typed as `DeepPartial<Entity>` whenever a TypeORM `SelectQueryBuilder` chain contains `.select(...)` or `.addSelect(...)`.
+Forces raw-row terminals (`getRawOne` / `getRawMany`) with an explicit generic type argument whenever a TypeORM `SelectQueryBuilder` chain contains `.select(...)` or `.addSelect(...)`.
 
-`SelectQueryBuilder.getOne()` / `getMany()` hydrate full entity instances from the result. Once you've narrowed the projection with `.select(...)` (or extended it with `.addSelect(...)`), the row shape no longer matches the entity — TypeORM still tries to hydrate, returning an instance with most fields undefined. The intent at that point is almost always raw rows, so the terminal should be `getRawOne` / `getRawMany`, and the row shape should be expressed in TypeScript as `DeepPartial<Entity>` for autocomplete on the projected fields.
+`SelectQueryBuilder.getOne()` / `getMany()` hydrate full entity instances from the result. Once you've narrowed the projection with `.select(...)` (or extended it with `.addSelect(...)`), the row shape no longer matches the entity — TypeORM still tries to hydrate, returning an instance with most fields undefined. The intent at that point is almost always raw rows, so the terminal should be `getRawOne` / `getRawMany` with an explicit result type.
 
 ## Rule details
 
@@ -16,18 +16,14 @@ Forces raw-row terminals (`getRawOne` / `getRawMany`) typed as `DeepPartial<Enti
 
 | Terminal | Disposition |
 |---|---|
-| `getOne` | Auto-fix → `getRawOne<DeepPartial<E>>()` |
-| `getMany` | Auto-fix → `getRawMany<DeepPartial<E>>()` |
-| `getRawOne` / `getRawMany` without generic | Auto-fix: insert `<DeepPartial<E>>` |
-| `getRawOne` / `getRawMany` with non-`DeepPartial` generic | Report only — hand-written generics are not overwritten |
+| `getOne` | Auto-fix → `getRawOne<{}>()` |
+| `getMany` | Auto-fix → `getRawMany<{}>()` |
+| `getRawOne` / `getRawMany` without generic | Auto-fix: insert `<{}>` |
+| `getRawOne` / `getRawMany` with any generic | Allowed (no error) |
 | `getOneOrFail`, `getManyAndCount` | Report only — these change runtime semantics; rewrite manually |
 | `getCount`, `getExists`, `getRawAndEntities`, `execute`, `stream`, `getQuery` | Allowed |
 
-When the entity type cannot be resolved (e.g. the receiver type is `any`), the rule reports without an autofix.
-
-### Imports
-
-Auto-fixes also ensure `DeepPartial` is imported from `'typeorm'`. If a `from 'typeorm'` import already exists, `DeepPartial` is appended to its named specifiers; otherwise a new import is inserted after the last existing import.
+The auto-fix inserts `<{}>` as a placeholder; replace it with an explicit row shape type that matches your `.select()` projection.
 
 ## Examples
 
@@ -43,12 +39,10 @@ this.restaurantSaveRepository
 ### ✅ Correct
 
 ```ts
-import { DeepPartial } from 'typeorm';
-
 this.restaurantSaveRepository
   .createQueryBuilder('restaurantSave')
   .select(['restaurantSave.restaurantId'])
-  .getRawOne<DeepPartial<RestaurantSaveEntity>>();
+  .getRawOne<{ restaurantId: RestaurantSaveEntity['restaurantId'] }>();
 ```
 
 ## Limitations

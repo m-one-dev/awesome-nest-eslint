@@ -6,9 +6,22 @@ import { noUnusedInjectable } from '../../src/rules/no-unused-injectable.js';
 
 const fixturesDir = path.resolve(import.meta.dirname, '..', 'fixtures');
 const ruleFixturesDir = path.join(fixturesDir, 'no-unused-injectable');
+const multiFixturesDir = path.join(
+  fixturesDir,
+  'no-unused-injectable-multi',
+);
+const multiWorkspaceTsconfig = path.join(multiFixturesDir, 'tsconfig.json');
+const multiLibDir = path.join(multiFixturesDir, 'lib');
 
 function readFixture(name: string): { filename: string; code: string } {
   const filename = path.join(ruleFixturesDir, name);
+  return { filename, code: fs.readFileSync(filename, 'utf8') };
+}
+
+function readMultiLibFixture(
+  name: string,
+): { filename: string; code: string } {
+  const filename = path.join(multiLibDir, 'src', name);
   return { filename, code: fs.readFileSync(filename, 'utf8') };
 }
 
@@ -23,6 +36,19 @@ const ruleTester = new RuleTester({
     },
   },
 });
+
+// Forces the per-file parserServices.program to be the lib-only tsconfig,
+// reproducing the cross-project bug condition: lib's program does not see
+// consumers under consumer/src.
+const multiLibLanguageOptions = {
+  parserOptions: {
+    projectService: {
+      allowDefaultProject: ['*.ts', '*.tsx'],
+      defaultProject: 'tsconfig.json',
+    },
+    tsconfigRootDir: multiLibDir,
+  },
+};
 
 ruleTester.run('no-unused-injectable', noUnusedInjectable, {
   valid: [
@@ -63,6 +89,12 @@ ruleTester.run('no-unused-injectable', noUnusedInjectable, {
       ...readFixture('valid-custom-decorator.service.ts'),
       options: [{ exemptDecorators: ['JobHandler'] }],
     },
+    {
+      name: 'valid: service injected from a different tsconfig project (cross-project regression)',
+      ...readMultiLibFixture('notification-client.service.ts'),
+      languageOptions: multiLibLanguageOptions,
+      options: [{ workspaceTsconfigPath: multiWorkspaceTsconfig }],
+    },
   ],
   invalid: [
     {
@@ -99,6 +131,18 @@ ruleTester.run('no-unused-injectable', noUnusedInjectable, {
         {
           messageId: 'unusedInjectable',
           data: { className: 'ProvidersArrayVarService' },
+        },
+      ],
+    },
+    {
+      name: 'invalid: orphan service in workspace with multiple tsconfig projects (cross-project regression)',
+      ...readMultiLibFixture('orphan-client.service.ts'),
+      languageOptions: multiLibLanguageOptions,
+      options: [{ workspaceTsconfigPath: multiWorkspaceTsconfig }],
+      errors: [
+        {
+          messageId: 'unusedInjectable',
+          data: { className: 'OrphanClientService' },
         },
       ],
     },

@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+
 import { RuleTester } from '@typescript-eslint/rule-tester';
 
 import { preferRawTerminalOnSelect } from '../../src/rules/prefer-raw-terminal-on-select.js';
@@ -19,7 +20,6 @@ const ruleTester = new RuleTester({
 });
 
 const preamble = `
-  type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P] };
   class SelectQueryBuilder<T> {
     select(_s: string | string[]): SelectQueryBuilder<T> { return this; }
     addSelect(_s: string | string[], _alias?: string): SelectQueryBuilder<T> { return this; }
@@ -56,9 +56,9 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').where('rs.id = :id', { id: 'x' }).getOne();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').where('rs.id = :id', { id: 'x' }).getOne();
           }
         }
       `,
@@ -68,9 +68,9 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').select(['rs.id']).getCount();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getCount();
           }
         }
       `,
@@ -80,9 +80,9 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').select(['rs.id']).getExists();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getExists();
           }
         }
       `,
@@ -92,21 +92,34 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawAndEntities();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawAndEntities();
           }
         }
       `,
     },
     {
-      name: '.select with getRawOne<DeepPartial<E>> → already correct',
+      name: '.select with getRawOne<SomeType> → already correct (any generic is valid)',
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawOne<DeepPartial<RestaurantSaveEntity>>();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawOne<{ id: string }>();
+          }
+        }
+      `,
+    },
+    {
+      name: '.select with getRawMany<Row> → valid (any generic is accepted)',
+      filename: testFilename,
+      code: `${preamble}
+        interface Row { id: string }
+        class S {
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
+          async run() {
+            return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawMany<Row>();
           }
         }
       `,
@@ -116,9 +129,9 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').select(['rs.id']).execute();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).execute();
           }
         }
       `,
@@ -137,9 +150,9 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
       filename: testFilename,
       code: `${preamble}
         class S {
-          constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+          constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
           async run() {
-            return this.repo.createQueryBuilder('rs').leftJoinAndSelect('rs.user', 'user').getOne();
+            return this.restaurantSaveRepository.createQueryBuilder('rs').leftJoinAndSelect('rs.user', 'user').getOne();
           }
         }
       `,
@@ -148,57 +161,59 @@ ruleTester.run('prefer-raw-terminal-on-select', preferRawTerminalOnSelect, {
 
   invalid: [
     {
-      name: 'inline chain: getOne after .select → autofix to getRawOne<DeepPartial<E>> + import',
+      name: 'inline chain: getOne after .select → autofix to getRawOne<{}>',
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.restaurantId']).getOne();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.restaurantId']).getOne();
   }
 }
 `,
       errors: [
         {
           messageId: 'useRawTerminal',
-          data: { method: 'getOne', rawMethod: 'getRawOne', entity: 'RestaurantSaveEntity' },
+          data: {
+            method: 'getOne',
+            rawMethod: 'getRawOne',
+          },
         },
       ],
-      output: `import { DeepPartial } from 'typeorm';
-
-${preamble}
+      output: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.restaurantId']).getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.restaurantId']).getRawOne<{}>();
   }
 }
 `,
     },
     {
-      name: 'inline chain: getMany after .select → autofix to getRawMany<DeepPartial<E>>',
+      name: 'inline chain: getMany after .select → autofix to getRawMany<{}>',
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.restaurantId', 'rs.userId']).getMany();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.restaurantId', 'rs.userId']).getMany();
   }
 }
 `,
       errors: [
         {
           messageId: 'useRawTerminal',
-          data: { method: 'getMany', rawMethod: 'getRawMany', entity: 'RestaurantSaveEntity' },
+          data: {
+            method: 'getMany',
+            rawMethod: 'getRawMany',
+          },
         },
       ],
-      output: `import { DeepPartial } from 'typeorm';
-
-${preamble}
+      output: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.restaurantId', 'rs.userId']).getRawMany<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.restaurantId', 'rs.userId']).getRawMany<{}>();
   }
 }
 `,
@@ -208,108 +223,95 @@ class S {
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').addSelect('COUNT(*)', 'cnt').getOne();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').addSelect('COUNT(*)', 'cnt').getOne();
   }
 }
 `,
       errors: [
         {
           messageId: 'useRawTerminal',
-          data: { method: 'getOne', rawMethod: 'getRawOne', entity: 'RestaurantSaveEntity' },
+          data: {
+            method: 'getOne',
+            rawMethod: 'getRawOne',
+          },
         },
       ],
-      output: `import { DeepPartial } from 'typeorm';
-
-${preamble}
+      output: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').addSelect('COUNT(*)', 'cnt').getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').addSelect('COUNT(*)', 'cnt').getRawOne<{}>();
   }
 }
 `,
     },
     {
-      name: 'merges into existing typeorm import',
+      name: 'imports are not modified — only the method is rewritten',
       filename: testFilename,
       code: `import { Repository } from 'typeorm';
 ${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getOne();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getOne();
   }
 }
 `,
       errors: [{ messageId: 'useRawTerminal' }],
-      output: `import { Repository, DeepPartial } from 'typeorm';
+      output: `import { Repository } from 'typeorm';
 ${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawOne<{}>();
   }
 }
 `,
     },
     {
-      name: 'existing getRawOne missing generic → inject DeepPartial',
+      name: 'existing getRawOne missing generic → inject {}',
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawOne();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawOne();
   }
 }
 `,
       errors: [
         {
-          messageId: 'requireDeepPartialGeneric',
-          data: { method: 'getRawOne', entity: 'RestaurantSaveEntity' },
+          messageId: 'requireGeneric',
+          data: { method: 'getRawOne' },
         },
       ],
-      output: `import { DeepPartial } from 'typeorm';
-
-${preamble}
+      output: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawOne<{}>();
   }
 }
 `,
-    },
-    {
-      name: 'existing getRawMany with hand-written non-DeepPartial generic → report only',
-      filename: testFilename,
-      code: `${preamble}
-interface Row { id: string }
-class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
-  async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawMany<Row>();
-  }
-}
-`,
-      errors: [{ messageId: 'requireDeepPartialGeneric', data: { method: 'getRawMany', entity: 'RestaurantSaveEntity' } }],
-      output: null,
     },
     {
       name: 'getOneOrFail after .select → suggest-only (no autofix)',
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getOneOrFail();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getOneOrFail();
   }
 }
 `,
       errors: [
-        { messageId: 'semanticTerminalNeedsManualRewrite', data: { method: 'getOneOrFail' } },
+        {
+          messageId: 'semanticTerminalNeedsManualRewrite',
+          data: { method: 'getOneOrFail' },
+        },
       ],
       output: null,
     },
@@ -318,14 +320,17 @@ class S {
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getManyAndCount();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getManyAndCount();
   }
 }
 `,
       errors: [
-        { messageId: 'semanticTerminalNeedsManualRewrite', data: { method: 'getManyAndCount' } },
+        {
+          messageId: 'semanticTerminalNeedsManualRewrite',
+          data: { method: 'getManyAndCount' },
+        },
       ],
       output: null,
     },
@@ -334,9 +339,9 @@ class S {
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    const qb = this.repo.createQueryBuilder('rs');
+    const qb = this.restaurantSaveRepository.createQueryBuilder('rs');
     qb.select(['rs.id']);
     return qb.getOne();
   }
@@ -345,18 +350,19 @@ class S {
       errors: [
         {
           messageId: 'useRawTerminal',
-          data: { method: 'getOne', rawMethod: 'getRawOne', entity: 'RestaurantSaveEntity' },
+          data: {
+            method: 'getOne',
+            rawMethod: 'getRawOne',
+          },
         },
       ],
-      output: `import { DeepPartial } from 'typeorm';
-
-${preamble}
+      output: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    const qb = this.repo.createQueryBuilder('rs');
+    const qb = this.restaurantSaveRepository.createQueryBuilder('rs');
     qb.select(['rs.id']);
-    return qb.getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return qb.getRawOne<{}>();
   }
 }
 `,
@@ -366,38 +372,39 @@ class S {
       filename: testFilename,
       code: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).clone().getOne();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).clone().getOne();
   }
 }
 `,
       errors: [
         {
           messageId: 'useRawTerminal',
-          data: { method: 'getOne', rawMethod: 'getRawOne', entity: 'RestaurantSaveEntity' },
+          data: {
+            method: 'getOne',
+            rawMethod: 'getRawOne',
+          },
         },
       ],
-      output: `import { DeepPartial } from 'typeorm';
-
-${preamble}
+      output: `${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).clone().getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).clone().getRawOne<{}>();
   }
 }
 `,
     },
     {
-      name: 'does not duplicate DeepPartial in existing typeorm import',
+      name: 'getOne after .select with existing DeepPartial import — import left alone',
       filename: testFilename,
       code: `import { DeepPartial, Repository } from 'typeorm';
 ${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getOne();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getOne();
   }
 }
 `,
@@ -405,9 +412,9 @@ class S {
       output: `import { DeepPartial, Repository } from 'typeorm';
 ${preamble}
 class S {
-  constructor(private readonly repo: Repository<RestaurantSaveEntity>) {}
+  constructor(private readonly restaurantSaveRepository: Repository<RestaurantSaveEntity>) {}
   async run() {
-    return this.repo.createQueryBuilder('rs').select(['rs.id']).getRawOne<DeepPartial<RestaurantSaveEntity>>();
+    return this.restaurantSaveRepository.createQueryBuilder('rs').select(['rs.id']).getRawOne<{}>();
   }
 }
 `,

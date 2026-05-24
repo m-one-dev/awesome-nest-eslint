@@ -41,6 +41,7 @@ const DEFAULT_SWAGGER_DECORATORS: readonly string[] = [
   'ApiAcceptedResponse',
   'ApiDefaultResponse',
   'ApiNoContentResponse',
+  'ApiPageResponse',
 ];
 
 const HTTP_METHOD_DECORATORS: ReadonlySet<string> = new Set([
@@ -357,6 +358,16 @@ export const uniqueEndpointDtos = createRule<[Options], MessageIds>({
       const existing = registry.get(dto.key);
       if (!existing) {
         registry.set(dto.key, [usage]);
+        return;
+      }
+      const sameSlot = existing.some(
+        (u) =>
+          u.filePath === filePath &&
+          u.controller === controller &&
+          u.method === methodName &&
+          u.position === position,
+      );
+      if (sameSlot) {
         return;
       }
       const prior = existing[0];

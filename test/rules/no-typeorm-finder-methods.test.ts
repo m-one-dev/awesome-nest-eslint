@@ -1,4 +1,5 @@
 import * as path from 'node:path';
+
 import { RuleTester } from '@typescript-eslint/rule-tester';
 
 import { noTypeormFinderMethods } from '../../src/rules/no-typeorm-finder-methods.js';
@@ -150,7 +151,7 @@ ruleTester.run('no-typeorm-finder-methods', noTypeormFinderMethods, {
         class S {
           constructor(private readonly entityManager: EntityManager) {}
           async f() {
-            return this.entityManager.transaction(async (m) => m.getRepository(User).createQueryBuilder('u').getOne());
+            return this.entityManager.transaction(async (m) => m.getRepository(User).createQueryBuilder('user').getOne());
           }
         }
       `,
@@ -172,7 +173,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOneBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOneBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -195,7 +201,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -218,7 +229,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -241,7 +257,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -263,7 +284,12 @@ class S {
           async byId(id: string) { return this.userRepository.findOneOrFail({ where: { id } }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOneOrFail', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOneOrFail', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -275,7 +301,12 @@ class S {
           async byId(id: string) { return this.userRepository.findOneByOrFail({ id }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOneByOrFail', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOneByOrFail', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -287,7 +318,12 @@ class S {
           async list() { return this.userRepository.findOneBy({ company: { id: 'x' } as any }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOneBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOneBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -299,7 +335,12 @@ class S {
   async f(id: string) { return this.tree.findOneBy({ id }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOneBy', receiver: 'TreeRepository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOneBy', receiver: 'TreeRepository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly tree: TreeRepository<User>) {}
@@ -322,7 +363,12 @@ class S {
   async list() { return this.userRepository.findAndCount(); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findAndCount', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findAndCount', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -340,7 +386,12 @@ class S {
   async list(companyId: string) { return this.userRepository.findAndCountBy({ companyId }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findAndCountBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findAndCountBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -359,7 +410,12 @@ class S {
   async total() { return this.userRepository.count(); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'count', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'count', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -377,7 +433,12 @@ class S {
   async total(companyId: string) { return this.userRepository.countBy({ companyId }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'countBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'countBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -396,7 +457,12 @@ class S {
   async any() { return this.userRepository.exist(); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'exist', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'exist', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -414,7 +480,12 @@ class S {
   async any(email: string) { return this.userRepository.exists({ where: { email } }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'exists', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'exists', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -435,7 +506,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'count', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'count', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -460,7 +536,12 @@ class S {
           async s() { return this.userRepository.sum('id'); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'sum', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'sum', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -472,7 +553,12 @@ class S {
           async s() { return this.userRepository.average('id'); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'average', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'average', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -488,7 +574,12 @@ class S {
   async f(ids: string[]) { return this.userRepository.findBy({ id: In(ids) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -507,7 +598,12 @@ class S {
   async f(x: string) { return this.userRepository.findBy({ id: Equal(x) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -526,7 +622,12 @@ class S {
   async f() { return this.userRepository.findBy({ id: IsNull() }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -545,7 +646,12 @@ class S {
   async f() { return this.userRepository.findBy({ id: Not(IsNull()) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -564,7 +670,12 @@ class S {
   async f(x: string) { return this.userRepository.findBy({ id: Not(x) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -583,7 +694,12 @@ class S {
   async f(ids: string[]) { return this.userRepository.findBy({ id: Not(In(ids)) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -602,7 +718,12 @@ class S {
   async f(x: Date) { return this.userRepository.findBy({ createdAt: LessThan(x) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -621,7 +742,12 @@ class S {
   async f(x: Date) { return this.userRepository.findBy({ createdAt: LessThanOrEqual(x) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -640,7 +766,12 @@ class S {
   async f(x: Date) { return this.userRepository.findBy({ createdAt: MoreThan(x) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -659,7 +790,12 @@ class S {
   async f(x: Date) { return this.userRepository.findBy({ createdAt: MoreThanOrEqual(x) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -678,7 +814,12 @@ class S {
   async f(a: Date, b: Date) { return this.userRepository.findBy({ createdAt: Between(a, b) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -697,7 +838,12 @@ class S {
   async f(p: string) { return this.userRepository.findBy({ email: Like(p) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -716,7 +862,12 @@ class S {
   async f(p: string) { return this.userRepository.findBy({ email: ILike(p) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -735,7 +886,12 @@ class S {
   async f(ids: string[]) { return this.userRepository.findBy({ id: Any(ids) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -754,7 +910,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: ArrayContains(t) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -773,7 +934,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: ArrayContainedBy(t) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -792,7 +958,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: ArrayOverlap(t) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -815,7 +986,12 @@ class S {
           async f() { return this.userRepository.findBy({ id: Raw(() => 'now()') }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -827,7 +1003,12 @@ class S {
           async f() { return this.userRepository.findBy({ id: Or(Equal('a'), Equal('b')) }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -839,7 +1020,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: Not(Any(t)) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -858,7 +1044,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: Not(ArrayContains(t)) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -877,7 +1068,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: Not(ArrayContainedBy(t)) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -896,7 +1092,12 @@ class S {
   async f(t: string[]) { return this.userRepository.findBy({ tags: Not(ArrayOverlap(t)) }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -915,7 +1116,12 @@ class S {
           async f() { const getIds = (): string[] => []; return this.userRepository.findBy({ id: In(getIds()) }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -927,7 +1133,12 @@ class S {
           async f(a: string[]) { return this.userRepository.findBy({ id: In([...a]) }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -942,7 +1153,12 @@ class S {
           }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -960,7 +1176,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -984,7 +1205,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1006,7 +1232,12 @@ class S {
   async f() { return this.userRepository.find({ where: [{ id: '1' }, { id: '2' }] }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1032,7 +1263,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1057,7 +1293,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1082,7 +1323,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1107,7 +1353,12 @@ class S {
           }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -1121,7 +1372,12 @@ class S {
           }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -1135,7 +1391,12 @@ class S {
           }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -1149,7 +1410,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1171,7 +1437,12 @@ class S {
           async f(cid: string) { return this.userRepository.findOneBy({ company: { id: cid } as any }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOneBy', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOneBy', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -1187,7 +1458,12 @@ class S {
   async f(id: string) { return this.userRepository.findOne({ where: { id }, select: ['id', 'email'] }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1207,7 +1483,12 @@ class S {
   async f(id: string) { return this.userRepository.findOne({ where: { id }, select: { id: true, email: true } }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1233,7 +1514,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1258,7 +1544,12 @@ class S {
           }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -1270,7 +1561,12 @@ class S {
           async f(id: string) { return this.userRepository.findOne({ where: { id }, select: { id: true, email: false } as any }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -1288,7 +1584,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1312,7 +1613,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1338,7 +1644,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1360,7 +1671,12 @@ class S {
           async f() { return this.userRepository.find({ order: { posts: { createdAt: 'DESC' } } as any }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -1378,7 +1694,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1400,7 +1721,12 @@ class S {
           async f(n: number) { return this.userRepository.find({ take: n + 1 }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -1412,7 +1738,12 @@ class S {
   async f() { return this.userRepository.find({ withDeleted: true }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1431,7 +1762,12 @@ class S {
           async f() { return this.userRepository.find({ withDeleted: false }); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
     {
@@ -1443,7 +1779,12 @@ class S {
   async f() { return this.userRepository.find({ cache: 60000 }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1462,7 +1803,12 @@ class S {
   async f() { return this.userRepository.find({ cache: { id: 'users', milliseconds: 60000 } }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1481,7 +1827,12 @@ class S {
   async f() { return this.userRepository.findOne({ lock: { mode: 'pessimistic_write' } } as any); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1500,7 +1851,12 @@ class S {
           async f() { return this.userRepository.findOne({ lock: { mode: 'pessimistic_partial_write', tables: ['user'] } } as any); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -1516,7 +1872,12 @@ class S {
           async f(id: string) { return this.userRepository.findOne({ where: { id }, mystery: true } as any); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'Repository' },
+        },
+      ],
       output: null,
     },
 
@@ -1541,7 +1902,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findAndCount', receiver: 'Repository' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findAndCount', receiver: 'Repository' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly userRepository: Repository<User>) {}
@@ -1571,7 +1937,12 @@ class S {
   async f(id: string) { return this.entityManager.findOne(User, { where: { id } }); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'EntityManager' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'EntityManager' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly entityManager: EntityManager) {}
@@ -1590,7 +1961,12 @@ class S {
   async f() { return this.entityManager.findOne(User, {}); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'EntityManager' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'EntityManager' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly entityManager: EntityManager) {}
@@ -1610,7 +1986,12 @@ class S {
   }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'findOne', receiver: 'EntityManager' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'findOne', receiver: 'EntityManager' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly dataSource: DataSource) {}
@@ -1630,7 +2011,12 @@ class S {
   async f() { return this.dataSource.manager.find(User); }
 }
 `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'EntityManager' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'EntityManager' },
+        },
+      ],
       output: `${preamble}
 class S {
   constructor(private readonly dataSource: DataSource) {}
@@ -1648,7 +2034,12 @@ class S {
           async f() { const cls = User; return this.entityManager.find(cls as any, {}); }
         }
       `,
-      errors: [{ messageId: 'bannedMethod', data: { method: 'find', receiver: 'EntityManager' } }],
+      errors: [
+        {
+          messageId: 'bannedMethod',
+          data: { method: 'find', receiver: 'EntityManager' },
+        },
+      ],
       output: null,
     },
   ],

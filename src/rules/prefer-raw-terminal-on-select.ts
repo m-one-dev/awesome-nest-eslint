@@ -1,4 +1,4 @@
-import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from '@typescript-eslint/utils';
 import { AST_NODE_TYPES, ASTUtils, ESLintUtils } from '@typescript-eslint/utils';
 import * as ts from 'typescript';
 
@@ -6,7 +6,7 @@ import { createRule } from '../utils/create-rule.js';
 
 type MessageIds =
   | 'useRawTerminal'
-  | 'requireDeepPartialGeneric'
+  | 'requireGeneric'
   | 'semanticTerminalNeedsManualRewrite';
 
 const SAFE_REWRITE_MAP: ReadonlyMap<string, string> = new Map([
@@ -39,7 +39,6 @@ const MAX_HERITAGE_DEPTH = 15;
 
 interface QbInfo {
   isQb: boolean;
-  entityName: string | null;
 }
 
 interface ChainAnalysis {
@@ -56,13 +55,13 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
     hasSuggestions: false,
     docs: {
       description:
-        'When a TypeORM SelectQueryBuilder chain calls .select / .addSelect, force the terminal to be getRawOne / getRawMany typed as DeepPartial<Entity>. Hydrated terminals (getOne, getMany, ...) return mismatched shapes for projected rows.',
+        'When a TypeORM SelectQueryBuilder chain calls .select / .addSelect, force the terminal to be getRawOne / getRawMany with an explicit generic type argument. Hydrated terminals (getOne, getMany, ...) return mismatched shapes for projected rows.',
     },
     messages: {
       useRawTerminal:
-        "'{{method}}' on a SelectQueryBuilder after .select / .addSelect is not allowed. Use '{{rawMethod}}<DeepPartial<{{entity}}>>()' instead.",
-      requireDeepPartialGeneric:
-        "'{{method}}' after .select / .addSelect must declare its row shape as 'DeepPartial<{{entity}}>'.",
+        "'{{method}}' on a SelectQueryBuilder after .select / .addSelect is not allowed. Use '{{rawMethod}}<{}>()' instead.",
+      requireGeneric:
+        "'{{method}}' after .select / .addSelect requires an explicit generic type argument, e.g. '{{method}}<{}>()'.",
       semanticTerminalNeedsManualRewrite:
         "'{{method}}' after .select / .addSelect changes raw-row semantics; rewrite manually to getRawOne / getRawMany or getRawAndEntities.",
     },
@@ -123,29 +122,13 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
         const symbol = cur.type.getSymbol() ?? cur.type.aliasSymbol;
         const name = symbol?.getName();
         if (name && QB_TYPE_NAMES.has(name) && symbolIsFromTypeorm(symbol)) {
-          const ref = cur.type as ts.TypeReference;
-          const args = checker.getTypeArguments(ref);
-          const entType = args?.[0];
-          if (!entType) return { isQb: true, entityName: null };
-          if (
-            (entType.flags &
-              (ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)) !==
-            0
-          ) {
-            return { isQb: true, entityName: null };
-          }
-          const entSymbol = entType.getSymbol() ?? entType.aliasSymbol;
-          const entName = entSymbol?.getName();
-          if (!entName || entName.startsWith('__') || !/^[A-Za-z_]\w*$/.test(entName)) {
-            return { isQb: true, entityName: null };
-          }
-          return { isQb: true, entityName: entName };
+          return { isQb: true };
         }
         for (const base of cur.type.getBaseTypes() ?? []) {
           stack.push({ type: base, depth: cur.depth + 1 });
         }
       }
-      return { isQb: false, entityName: null };
+      return { isQb: false };
     }
 
     function unwrap(node: TSESTree.Node): TSESTree.Node {
@@ -227,75 +210,6 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
       return false;
     }
 
-    function findExistingTypeormImport(): TSESTree.ImportDeclaration | null {
-      for (const stmt of sourceCode.ast.body) {
-        if (
-          stmt.type === AST_NODE_TYPES.ImportDeclaration &&
-          stmt.source.value === 'typeorm'
-        ) {
-          return stmt;
-        }
-      }
-      return null;
-    }
-
-    function buildImportFix(
-      fixer: TSESLint.RuleFixer,
-    ): TSESLint.RuleFix | null {
-      const existing = findExistingTypeormImport();
-      if (existing) {
-        const named = existing.specifiers.filter(
-          (s): s is TSESTree.ImportSpecifier =>
-            s.type === AST_NODE_TYPES.ImportSpecifier,
-        );
-        const has = named.some(
-          (s) =>
-            s.imported.type === AST_NODE_TYPES.Identifier &&
-            s.imported.name === 'DeepPartial',
-        );
-        if (has) return null;
-        const lastNamed = named.at(-1);
-        if (lastNamed) {
-          return fixer.insertTextAfter(lastNamed, ', DeepPartial');
-        }
-        return fixer.insertTextAfter(
-          existing,
-          "\nimport { DeepPartial } from 'typeorm';",
-        );
-      }
-      const imports = sourceCode.ast.body.filter(
-        (n): n is TSESTree.ImportDeclaration =>
-          n.type === AST_NODE_TYPES.ImportDeclaration,
-      );
-      const lastImport = imports.at(-1);
-      if (lastImport) {
-        return fixer.insertTextAfter(
-          lastImport,
-          "\nimport { DeepPartial } from 'typeorm';",
-        );
-      }
-      return fixer.insertTextBeforeRange(
-        [0, 0],
-        "import { DeepPartial } from 'typeorm';\n\n",
-      );
-    }
-
-    function genericText(entity: string): string {
-      return `<DeepPartial<${entity}>>`;
-    }
-
-    function existingGenericIsDeepPartial(
-      typeArgs: TSESTree.TSTypeParameterInstantiation,
-    ): boolean {
-      const params = typeArgs.params;
-      const p = params[0];
-      if (params.length !== 1 || !p) return false;
-      if (p.type !== AST_NODE_TYPES.TSTypeReference) return false;
-      const name = p.typeName;
-      if (name.type !== AST_NODE_TYPES.Identifier) return false;
-      return name.name === 'DeepPartial';
-    }
-
     return {
       CallExpression(node: TSESTree.CallExpression): void {
         const callee = node.callee;
@@ -326,34 +240,14 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
         if (!isQb) return;
         if (!hasSelect) return;
 
-        const entity = qbInfo.entityName;
-
         if (RAW_TERMINALS.has(method)) {
-          if (node.typeArguments) {
-            if (existingGenericIsDeepPartial(node.typeArguments)) return;
-            context.report({
-              node: callee.property,
-              messageId: 'requireDeepPartialGeneric',
-              data: { method, entity: entity ?? 'Entity' },
-            });
-            return;
-          }
-          if (!entity) {
-            context.report({
-              node: callee.property,
-              messageId: 'requireDeepPartialGeneric',
-              data: { method, entity: 'Entity' },
-            });
-            return;
-          }
+          if (node.typeArguments) return;
           context.report({
             node: callee.property,
-            messageId: 'requireDeepPartialGeneric',
-            data: { method, entity },
+            messageId: 'requireGeneric',
+            data: { method },
             *fix(fixer) {
-              yield fixer.insertTextAfter(callee.property, genericText(entity));
-              const importFix = buildImportFix(fixer);
-              if (importFix) yield importFix;
+              yield fixer.insertTextAfter(callee.property, '<{}>');
             },
           });
           return;
@@ -370,25 +264,12 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
 
         const rawMethod = SAFE_REWRITE_MAP.get(method);
         if (!rawMethod) return;
-        if (!entity) {
-          context.report({
-            node: callee.property,
-            messageId: 'useRawTerminal',
-            data: { method, rawMethod, entity: 'Entity' },
-          });
-          return;
-        }
         context.report({
           node: callee.property,
           messageId: 'useRawTerminal',
-          data: { method, rawMethod, entity },
+          data: { method, rawMethod },
           *fix(fixer) {
-            yield fixer.replaceText(
-              callee.property,
-              `${rawMethod}${genericText(entity)}`,
-            );
-            const importFix = buildImportFix(fixer);
-            if (importFix) yield importFix;
+            yield fixer.replaceText(callee.property, `${rawMethod}<{}>`);
           },
         });
       },

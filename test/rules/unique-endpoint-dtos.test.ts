@@ -29,6 +29,8 @@ const preamble = `
   function ApiOkResponse(_opts?: unknown): MethodDecorator { return () => {}; }
   function ApiCreatedResponse(_opts?: unknown): MethodDecorator { return () => {}; }
   function ApiResponse(_opts?: unknown): MethodDecorator { return () => {}; }
+  function ApiPageResponse(_opts?: unknown): MethodDecorator { return () => {}; }
+  class PageDto<T> { results!: T[]; }
   class CreateFooDto { a!: string; }
   class UpdateFooDto { b!: string; }
   class FooQueryDto { q!: string; }
@@ -124,6 +126,28 @@ ruleTester.run('unique-endpoint-dtos', uniqueEndpointDtos, {
           @Get()
           @ApiOkResponse({ type: ListFooResponseDto })
           list(@Query() q: FooQueryDto) { return null!; }
+        }
+      `,
+    },
+    {
+      name: 'valid: same DTO on return type and @ApiResponse type of the same endpoint occupies one response slot',
+      code: `${preamble}
+        @Controller('foo')
+        class FooController {
+          @Get()
+          @ApiResponse({ status: 200, description: 'ok', type: FooResponseDto })
+          fetch(): Promise<FooResponseDto> { return null!; }
+        }
+      `,
+    },
+    {
+      name: 'valid: same DTO on PageDto return type and @ApiPageResponse type of the same endpoint occupies one response slot',
+      code: `${preamble}
+        @Controller('foo')
+        class FooController {
+          @Get()
+          @ApiPageResponse({ type: FooResponseDto })
+          list(): Promise<PageDto<FooResponseDto>> { return null!; }
         }
       `,
     },
