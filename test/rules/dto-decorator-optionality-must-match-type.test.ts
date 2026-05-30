@@ -143,6 +143,25 @@ ruleTester.run(
           }
         `,
       },
+      {
+        name: 'optional decorator on property with default value (no ?)',
+        code: `${preamble}
+          class FooDto { @NumberFieldOptional() readonly limit: number = 10; }
+        `,
+      },
+      {
+        name: 'optional decorator on property with enum default (no ?)',
+        code: `${preamble}
+          enum OrderEnum { ASC, DESC }
+          class FooDto { @StringFieldOptional() readonly order: OrderEnum = OrderEnum.DESC; }
+        `,
+      },
+      {
+        name: 'optional decorator on property with boolean default (no ?)',
+        code: `${preamble}
+          class FooDto { @StringFieldOptional() readonly enabled: boolean = false; }
+        `,
+      },
     ],
 
     invalid: [
@@ -260,6 +279,30 @@ ruleTester.run(
           { messageId: 'optionalPropertyRequiresOptionalDecorator' },
           { messageId: 'nullableOptionRequiresNullableType' },
           { messageId: 'nullableOptionRequiresNullableType' },
+        ],
+      },
+      {
+        name: 'optional decorator on property with = undefined initializer (not a real default)',
+        code: `${preamble}
+          class FooDto { @StringFieldOptional() readonly name: string = undefined; }
+        `,
+        errors: [
+          {
+            messageId: 'optionalDecoratorRequiresOptionalProperty',
+            data: { decorator: 'StringFieldOptional', property: 'name' },
+          },
+        ],
+      },
+      {
+        name: 'optional decorator on property with = void 0 initializer (not a real default)',
+        code: `${preamble}
+          class FooDto { @StringFieldOptional() readonly name: string = void 0; }
+        `,
+        errors: [
+          {
+            messageId: 'optionalDecoratorRequiresOptionalProperty',
+            data: { decorator: 'StringFieldOptional', property: 'name' },
+          },
         ],
       },
     ],

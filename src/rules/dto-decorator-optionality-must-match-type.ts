@@ -159,6 +159,25 @@ export const dtoDecoratorOptionalityMustMatchType = createRule<[], MessageIds>({
       return Boolean(className && className.endsWith('Dto'));
     }
 
+    function isInitializerUndefinable(
+      node: TSESTree.PropertyDefinition,
+    ): boolean {
+      if (!node.value) return true;
+      if (
+        node.value.type === AST_NODE_TYPES.Identifier &&
+        node.value.name === 'undefined'
+      ) {
+        return true;
+      }
+      if (
+        node.value.type === AST_NODE_TYPES.UnaryExpression &&
+        node.value.operator === 'void'
+      ) {
+        return true;
+      }
+      return false;
+    }
+
     function checkPropertyDefinition(node: TSESTree.PropertyDefinition): void {
       if (node.static) return;
       if (
@@ -190,6 +209,9 @@ export const dtoDecoratorOptionalityMustMatchType = createRule<[], MessageIds>({
 
       const isPropertyOptional = node.optional === true;
 
+      const hasRealDefault =
+        node.value !== null && !isInitializerUndefinable(node);
+
       let typeIsNullable = false;
       if (node.typeAnnotation) {
         const tsTypeNode = services.esTreeNodeToTSNodeMap.get(
@@ -203,10 +225,13 @@ export const dtoDecoratorOptionalityMustMatchType = createRule<[], MessageIds>({
         typeIsNullable = typeIncludesNull(tsType);
       }
 
+      const propertyIsEffectivelyOptional =
+        isPropertyOptional || hasRealDefault;
+
       for (const { node: decoratorNode, name } of fieldShapeDecorators) {
         const isOptionalDecorator = isOptionalVariantName(name);
 
-        if (isOptionalDecorator && !isPropertyOptional) {
+        if (isOptionalDecorator && !propertyIsEffectivelyOptional) {
           context.report({
             node: decoratorNode,
             messageId: 'optionalDecoratorRequiresOptionalProperty',
