@@ -1,6 +1,7 @@
 import { dtoDecoratorOptionalityMustMatchType } from './dto-decorator-optionality-must-match-type.js';
 import { dtoMustExtendAbstractOrBase } from './dto-must-extend-abstract-or-base.js';
 import { maxTypeormJoins } from './max-typeorm-joins.js';
+import { noApiPropertyDecorator } from './no-api-property-decorator.js';
 import { noBuiltinExceptionInstantiation } from './no-builtin-exception-instantiation.js';
 import { noDoubleCastLaundering } from './no-double-cast-laundering.js';
 import { noDtoDirectInstantiation } from './no-dto-direct-instantiation.js';
@@ -22,6 +23,7 @@ export const rules = {
     dtoDecoratorOptionalityMustMatchType,
   'dto-must-extend-abstract-or-base': dtoMustExtendAbstractOrBase,
   'max-typeorm-joins': maxTypeormJoins,
+  'no-api-property-decorator': noApiPropertyDecorator,
   'no-builtin-exception-instantiation': noBuiltinExceptionInstantiation,
   'no-double-cast-laundering': noDoubleCastLaundering,
   'no-dto-direct-instantiation': noDtoDirectInstantiation,

@@ -87,6 +87,7 @@ export function buildRecommended(
       files: ['**/*.dto.ts', '**/dto/**/*.ts'],
       rules: {
         [`${PLUGIN_NAME}/dto-must-extend-abstract-or-base`]: 'error',
+        [`${PLUGIN_NAME}/no-api-property-decorator`]: 'error',
       },
     },
     {
