@@ -25,6 +25,7 @@ export function buildRecommended(
         [`${PLUGIN_NAME}/unique-endpoint-dtos`]: 'error',
         [`${PLUGIN_NAME}/uuid-field-naming`]: 'error',
         [`${PLUGIN_NAME}/no-unused-injectable`]: 'error',
+        [`${PLUGIN_NAME}/no-duplicate-module-entries`]: 'error',
         [`${PLUGIN_NAME}/prefer-promise-all`]: 'warn',
       },
     },

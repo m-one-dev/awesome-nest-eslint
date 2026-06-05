@@ -5,6 +5,7 @@ import { noApiPropertyDecorator } from './no-api-property-decorator.js';
 import { noBuiltinExceptionInstantiation } from './no-builtin-exception-instantiation.js';
 import { noDoubleCastLaundering } from './no-double-cast-laundering.js';
 import { noDtoDirectInstantiation } from './no-dto-direct-instantiation.js';
+import { noDuplicateModuleEntries } from './no-duplicate-module-entries.js';
 import { noTypeormFinderMethods } from './no-typeorm-finder-methods.js';
 import { noUnusedInjectable } from './no-unused-injectable.js';
 import { payloadTypeSuffix } from './payload-type-suffix.js';
@@ -27,6 +28,7 @@ export const rules = {
   'no-builtin-exception-instantiation': noBuiltinExceptionInstantiation,
   'no-double-cast-laundering': noDoubleCastLaundering,
   'no-dto-direct-instantiation': noDtoDirectInstantiation,
+  'no-duplicate-module-entries': noDuplicateModuleEntries,
   'no-typeorm-finder-methods': noTypeormFinderMethods,
   'no-unused-injectable': noUnusedInjectable,
   'payload-type-suffix': payloadTypeSuffix,

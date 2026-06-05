@@ -1,7 +1,7 @@
-import type { TSESTree } from '@typescript-eslint/utils';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
 import { AST_NODE_TYPES } from '@typescript-eslint/utils';
 
-import { createRule } from '../utils/create-rule';
+import { createRule } from '../utils/create-rule.js';
 
 type MessageIds = 'noApiProperty' | 'noApiPropertyOptional';
 
@@ -27,7 +27,7 @@ export const noApiPropertyDecorator = createRule<[], MessageIds>({
     schema: [],
     defaultOptions: [],
   },
-  create(context) {
+  create(context): TSESLint.RuleListener {
     return {
       [AST_NODE_TYPES.Decorator](node: TSESTree.Decorator) {
         const expr = node.expression;
