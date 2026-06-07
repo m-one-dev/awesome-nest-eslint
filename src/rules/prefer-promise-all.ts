@@ -118,7 +118,10 @@ function statementReferencesGroupBinding(
 
   if (stmt.type === AST_NODE_TYPES.VariableDeclaration) {
     return stmt.declarations.some(
-      (decl) => decl.init !== null && decl.init !== undefined && nodeReferencesAny(decl.init, groupBindings),
+      (decl) =>
+        decl.init !== null &&
+        decl.init !== undefined &&
+        nodeReferencesAny(decl.init, groupBindings),
     );
   }
 
@@ -168,7 +171,10 @@ export const preferPromiseAll = createRule<[], MessageIds>({
     defaultOptions: [],
   },
   create(context) {
-    function emitGroup(members: GroupMember[], hasIntermediates: boolean): void {
+    function emitGroup(
+      members: GroupMember[],
+      hasIntermediates: boolean,
+    ): void {
       if (members.length < 2) {
         return;
       }
@@ -201,7 +207,9 @@ export const preferPromiseAll = createRule<[], MessageIds>({
                 }
 
                 const ids = members
-                  .map((m) => context.sourceCode.getText(m.node.declarations[0]!.id))
+                  .map((m) =>
+                    context.sourceCode.getText(m.node.declarations[0]!.id),
+                  )
                   .join(', ');
                 const args = members
                   .map((m) => context.sourceCode.getText(m.awaitArgument))
@@ -232,7 +240,13 @@ export const preferPromiseAll = createRule<[], MessageIds>({
       for (const stmt of stmts) {
         const awaitDecl = extractAwaitDecl(stmt);
 
-        if (awaitDecl !== null) {
+        if (awaitDecl === null) {
+          if (statementReferencesGroupBinding(stmt, groupBindings)) {
+            closeGroup();
+          } else if (members.length > 0) {
+            hasIntermediates = true;
+          }
+        } else {
           if (nodeReferencesAny(awaitDecl.awaitArgument, groupBindings)) {
             closeGroup();
           }
@@ -245,12 +259,6 @@ export const preferPromiseAll = createRule<[], MessageIds>({
 
           for (const name of awaitDecl.bindingNames) {
             groupBindings.add(name);
-          }
-        } else {
-          if (statementReferencesGroupBinding(stmt, groupBindings)) {
-            closeGroup();
-          } else if (members.length > 0) {
-            hasIntermediates = true;
           }
         }
       }

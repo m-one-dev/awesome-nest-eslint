@@ -85,7 +85,9 @@ ruleTester.run('no-dto-direct-instantiation', noDtoDirectInstantiation, {
         class FooDto {}
         const dto = new FooDto({ x: 1 });
       `,
-      errors: [{ messageId: 'noNewWithObjectLiteral', data: { name: 'FooDto' } }],
+      errors: [
+        { messageId: 'noNewWithObjectLiteral', data: { name: 'FooDto' } },
+      ],
       output: `
         class FooDto {}
         const dto = FooDto.create({ x: 1 });
@@ -160,7 +162,9 @@ ruleTester.run('no-dto-direct-instantiation', noDtoDirectInstantiation, {
           }
         }
       `,
-      errors: [{ messageId: 'noNewWithObjectLiteral', data: { name: 'BarDto' } }],
+      errors: [
+        { messageId: 'noNewWithObjectLiteral', data: { name: 'BarDto' } },
+      ],
       output: `
         class BarDto {}
         class FooDto {

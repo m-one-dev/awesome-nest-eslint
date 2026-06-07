@@ -126,7 +126,7 @@ export const uniqueEndpointDtos = createRule<[Options], MessageIds>({
     );
     const swaggerResponseDecorators = new Set(
       rawOptions.swaggerResponseDecorators &&
-      rawOptions.swaggerResponseDecorators.length > 0
+        rawOptions.swaggerResponseDecorators.length > 0
         ? rawOptions.swaggerResponseDecorators
         : [...DEFAULT_SWAGGER_DECORATORS],
     );
@@ -196,7 +196,10 @@ export const uniqueEndpointDtos = createRule<[Options], MessageIds>({
       if (!arg) {
         return false;
       }
-      if (arg.type === AST_NODE_TYPES.Literal && typeof arg.value === 'string') {
+      if (
+        arg.type === AST_NODE_TYPES.Literal &&
+        typeof arg.value === 'string'
+      ) {
         return true;
       }
       return false;
@@ -266,12 +269,7 @@ export const uniqueEndpointDtos = createRule<[Options], MessageIds>({
         responseWrappers.has(aliasName) &&
         type.aliasTypeArguments?.[0]
       ) {
-        collectDtosFromTsType(
-          type.aliasTypeArguments[0],
-          out,
-          seen,
-          depth + 1,
-        );
+        collectDtosFromTsType(type.aliasTypeArguments[0], out, seen, depth + 1);
         return;
       }
 
@@ -552,9 +550,7 @@ export const uniqueEndpointDtos = createRule<[Options], MessageIds>({
     }
 
     return {
-      [AST_NODE_TYPES.ClassDeclaration](
-        node: TSESTree.ClassDeclaration,
-      ): void {
+      [AST_NODE_TYPES.ClassDeclaration](node: TSESTree.ClassDeclaration): void {
         if (!isControllerClass(node)) {
           return;
         }

@@ -4,7 +4,9 @@ export function Injectable(_opts?: unknown): ClassDecorator {
 export function Module(_meta: unknown): ClassDecorator {
   return () => {};
 }
-export function Inject(_token?: unknown): ParameterDecorator & PropertyDecorator {
+export function Inject(
+  _token?: unknown,
+): ParameterDecorator & PropertyDecorator {
   return () => {};
 }
 export function MessagePattern(_pattern?: unknown): MethodDecorator {

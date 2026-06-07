@@ -150,7 +150,8 @@ export const requireUseDtoDecorator = createRule<[], MessageIds>({
         data: { name: className, dto: dtoName },
         fix(fixer): TSESLint.RuleFix {
           const insertionTarget = decorators[0] ?? node;
-          const targetLine = sourceCode.lines[insertionTarget.loc.start.line - 1] ?? '';
+          const targetLine =
+            sourceCode.lines[insertionTarget.loc.start.line - 1] ?? '';
           const indentMatch = /^\s*/.exec(targetLine);
           const indent = indentMatch ? indentMatch[0] : '';
           return fixer.insertTextBefore(

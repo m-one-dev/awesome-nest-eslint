@@ -38,33 +38,33 @@ const SKIPPED_TYPE_FLAGS =
   ts.TypeFlags.Unknown;
 
 export const payloadTypeSuffix = createRule<[Options], MessageIds>({
-  name: "payload-type-suffix",
+  name: 'payload-type-suffix',
   meta: {
-    type: "problem",
+    type: 'problem',
     docs: {
       description:
-        "Payload parameters on NATS controllers and AbstractClientService `send`/`emit` calls must use a type whose name ends with an allowed payload suffix.",
+        'Payload parameters on NATS controllers and AbstractClientService `send`/`emit` calls must use a type whose name ends with an allowed payload suffix.',
     },
     messages: {
       payloadTypeSuffix:
         "@Payload() parameter type '{{name}}' must end with one of: {{suffixes}}.",
       sendArgTypeSuffix:
         "Data argument of '{{method}}' has type '{{name}}' which must end with one of: {{suffixes}}.",
-      missingType: "@Payload() parameter must have a type annotation.",
+      missingType: '@Payload() parameter must have a type annotation.',
       paramNameMustBePayload:
         "@Payload() parameter must be named 'payload' (got '{{name}}').",
     },
     schema: [
       {
-        type: "object",
+        type: 'object',
         additionalProperties: false,
         properties: {
           allowedSuffixes: {
-            type: "array",
-            items: { type: "string", minLength: 1 },
+            type: 'array',
+            items: { type: 'string', minLength: 1 },
             minItems: 1,
           },
-          enforcePayloadParamName: { type: "boolean" },
+          enforcePayloadParamName: { type: 'boolean' },
         },
       },
     ],
@@ -83,7 +83,7 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
     const enforcePayloadParamName = rawOptions.enforcePayloadParamName ?? false;
     const services = ESLintUtils.getParserServices(context);
     const checker = services.program.getTypeChecker();
-    const suffixesText = allowedSuffixes.join(", ");
+    const suffixesText = allowedSuffixes.join(', ');
 
     const heritageCache = new WeakMap<TSESTree.Node, boolean>();
 
@@ -109,7 +109,7 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
             if (!superSymbol) {
               continue;
             }
-            if (superSymbol.getName() === "AbstractClientService") {
+            if (superSymbol.getName() === 'AbstractClientService') {
               return true;
             }
             const decls = superSymbol.getDeclarations() ?? [];
@@ -198,7 +198,7 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
       }
       const symbol = type.aliasSymbol ?? type.getSymbol();
       const name = symbol?.getName();
-      if (!name || name === "__type" || name === "__object") {
+      if (!name || name === '__type' || name === '__object') {
         return [];
       }
       return [name];
@@ -234,12 +234,12 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
     function getParamTypeAnnotation(
       param: TSESTree.Parameter,
     ): TSESTree.TSTypeAnnotation | undefined {
-      if ("typeAnnotation" in param && param.typeAnnotation) {
+      if ('typeAnnotation' in param && param.typeAnnotation) {
         return param.typeAnnotation;
       }
       if (
         param.type === AST_NODE_TYPES.AssignmentPattern &&
-        "typeAnnotation" in param.left &&
+        'typeAnnotation' in param.left &&
         param.left.typeAnnotation
       ) {
         return param.left.typeAnnotation;
@@ -260,7 +260,7 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
 
     return {
       Decorator(node) {
-        if (getDecoratorName(node) !== "Payload") {
+        if (getDecoratorName(node) !== 'Payload') {
           return;
         }
         const param = node.parent;
@@ -271,10 +271,10 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
 
         if (enforcePayloadParamName) {
           const name = getParamIdentifierName(typedParam);
-          if (name !== null && name !== "payload") {
+          if (name !== null && name !== 'payload') {
             context.report({
               node: typedParam,
-              messageId: "paramNameMustBePayload",
+              messageId: 'paramNameMustBePayload',
               data: { name },
             });
           }
@@ -284,7 +284,7 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
         if (!typeAnnotation) {
           context.report({
             node: typedParam,
-            messageId: "missingType",
+            messageId: 'missingType',
           });
 
           return;
@@ -304,8 +304,8 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
         }
         context.report({
           node: typeAnnotation.typeAnnotation,
-          messageId: "payloadTypeSuffix",
-          data: { name: bad.join(" | "), suffixes: suffixesText },
+          messageId: 'payloadTypeSuffix',
+          data: { name: bad.join(' | '), suffixes: suffixesText },
         });
       },
 
@@ -319,7 +319,7 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
           return;
         }
         const methodName = callee.property.name;
-        if (methodName !== "send" && methodName !== "emit") {
+        if (methodName !== 'send' && methodName !== 'emit') {
           return;
         }
         const classNode = findEnclosingClass(node);
@@ -347,10 +347,10 @@ export const payloadTypeSuffix = createRule<[Options], MessageIds>({
         }
         context.report({
           node: dataArg,
-          messageId: "sendArgTypeSuffix",
+          messageId: 'sendArgTypeSuffix',
           data: {
             method: methodName,
-            name: bad.join(" | "),
+            name: bad.join(' | '),
             suffixes: suffixesText,
           },
         });

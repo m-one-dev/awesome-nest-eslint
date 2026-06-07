@@ -27,5 +27,5 @@ plugin.configs = {
 };
 
 export default plugin;
-export { rules };
 export type { AwesomeNestPlugin };
+export { rules };

@@ -58,7 +58,9 @@ ruleTester.run('no-double-cast-laundering', noDoubleCastLaundering, {
         interface User { id: number; }
         const u = raw as unknown as User;
       `,
-      errors: [{ messageId: 'noLaundering', data: { intermediate: 'unknown' } }],
+      errors: [
+        { messageId: 'noLaundering', data: { intermediate: 'unknown' } },
+      ],
     },
     {
       name: 'invalid: as any as T',
@@ -76,7 +78,9 @@ ruleTester.run('no-double-cast-laundering', noDoubleCastLaundering, {
         declare function getSomething(): { other: string };
         const r = getSomething() as unknown as Result;
       `,
-      errors: [{ messageId: 'noLaundering', data: { intermediate: 'unknown' } }],
+      errors: [
+        { messageId: 'noLaundering', data: { intermediate: 'unknown' } },
+      ],
     },
     {
       name: 'invalid: launders an object literal',
@@ -84,7 +88,9 @@ ruleTester.run('no-double-cast-laundering', noDoubleCastLaundering, {
         interface EventDto { id: number; title: string; }
         const e = ({ wrong: 'shape' } as unknown as EventDto);
       `,
-      errors: [{ messageId: 'noLaundering', data: { intermediate: 'unknown' } }],
+      errors: [
+        { messageId: 'noLaundering', data: { intermediate: 'unknown' } },
+      ],
     },
   ],
 });

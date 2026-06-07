@@ -218,7 +218,10 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
       }
       const nonNullish = type.types.filter(
         (t) =>
-          !(t.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void)),
+          !(
+            t.flags &
+            (ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void)
+          ),
       );
       if (nonNullish.length === 0) {
         return null;
@@ -277,9 +280,7 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
       }
       if (wrapperName && pageWrappers.has(wrapperName)) {
         const args = getTypeArgs(type);
-        const inner = args[0]
-          ? extractInnerDtoName(args[0], depth + 1)
-          : null;
+        const inner = args[0] ? extractInnerDtoName(args[0], depth + 1) : null;
         if (!inner) {
           return null;
         }
@@ -291,9 +292,7 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
         checker.isTupleType(type)
       ) {
         const args = getTypeArgs(type);
-        const inner = args[0]
-          ? extractInnerDtoName(args[0], depth + 1)
-          : null;
+        const inner = args[0] ? extractInnerDtoName(args[0], depth + 1) : null;
         if (!inner) {
           return null;
         }
@@ -394,14 +393,10 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
     }
 
     function isLiteralTrue(node: TSESTree.Node): boolean {
-      return (
-        node.type === AST_NODE_TYPES.Literal && node.value === true
-      );
+      return node.type === AST_NODE_TYPES.Literal && node.value === true;
     }
 
-    function classifyDecoratorTypeNode(
-      typeValue: TSESTree.Node,
-    ): Shape | null {
+    function classifyDecoratorTypeNode(typeValue: TSESTree.Node): Shape | null {
       if (typeValue.type === AST_NODE_TYPES.Identifier) {
         const dtoName = resolveIdentifierDtoName(typeValue);
         if (!dtoName) {
@@ -499,7 +494,10 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
         isSuccess = true;
         forcedKind = named.forcedKind;
       } else if (name === 'ApiResponse') {
-        if (!optionsArg || optionsArg.type !== AST_NODE_TYPES.ObjectExpression) {
+        if (
+          !optionsArg ||
+          optionsArg.type !== AST_NODE_TYPES.ObjectExpression
+        ) {
           return null;
         }
         const statusProp = findObjectProperty(optionsArg, 'status');
@@ -546,9 +544,7 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
       };
     }
 
-    function checkEndpoint(
-      method: TSESTree.MethodDefinition,
-    ): void {
+    function checkEndpoint(method: TSESTree.MethodDefinition): void {
       const fn = method.value;
       const returnType = fn.returnType;
       if (!returnType) {
@@ -598,9 +594,7 @@ export const swaggerMatchesReturnType = createRule<[Options], MessageIds>({
     }
 
     return {
-      [AST_NODE_TYPES.ClassDeclaration](
-        node: TSESTree.ClassDeclaration,
-      ): void {
+      [AST_NODE_TYPES.ClassDeclaration](node: TSESTree.ClassDeclaration): void {
         if (!isControllerClass(node)) {
           return;
         }

@@ -10,8 +10,7 @@ type MessageIds = 'duplicateInModuleArray' | 'duplicateInConstArray';
  * spread into a `@Module()` decorator (e.g. `handlers`, `commandHandlers`,
  * `queryProviders`, `extraControllers`, `customExports`).
  */
-const MODULE_ARRAY_NAME_PATTERN =
-  /(?:handler|provider|controller|export)s?$/i;
+const MODULE_ARRAY_NAME_PATTERN = /(?:handler|provider|controller|export)s?$/i;
 
 /**
  * Returns `true` when the decorator expression looks like `@Module(...)`.
@@ -59,10 +58,7 @@ function fixDuplicateElement(
     includeComments: false,
   });
 
-  if (
-    tokenBefore &&
-    tokenBefore.value === ','
-  ) {
+  if (tokenBefore && tokenBefore.value === ',') {
     // Remove the comma (and any whitespace before the element) plus the
     // element itself.
     return fixer.removeRange([tokenBefore.range[0], duplicate.range[1]]);

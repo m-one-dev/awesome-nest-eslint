@@ -125,7 +125,9 @@ export const uuidFieldNaming = createRule<[Options], MessageIds>({
         if (args.length === 0) return null;
         if (args.every((a) => a === args[0])) return args[0] ?? null;
         // Heterogeneous tuple — only fold to a single type if all branches are Uuid
-        return args.every((a) => typeHasUuidBrand(a)) ? args[0] ?? null : null;
+        return args.every((a) => typeHasUuidBrand(a))
+          ? (args[0] ?? null)
+          : null;
       }
       const aliasName = type.aliasSymbol?.getName();
       if (aliasName === 'ReadonlyArray' && type.aliasTypeArguments?.[0]) {
@@ -157,7 +159,9 @@ export const uuidFieldNaming = createRule<[Options], MessageIds>({
       const anyUuid = meaningful.some((t) => typeHasUuidBrand(t));
       if (anyUuid) return 'uuid';
 
-      const allArrays = meaningful.every((t) => getArrayElementType(t) !== null);
+      const allArrays = meaningful.every(
+        (t) => getArrayElementType(t) !== null,
+      );
       if (allArrays) {
         const anyUuidArray = meaningful.some((t) => {
           const el = getArrayElementType(t);
@@ -212,7 +216,9 @@ export const uuidFieldNaming = createRule<[Options], MessageIds>({
     }
 
     function getKeyName(
-      key: TSESTree.PropertyDefinition['key'] | TSESTree.TSPropertySignature['key'],
+      key:
+        | TSESTree.PropertyDefinition['key']
+        | TSESTree.TSPropertySignature['key'],
       computed: boolean,
     ): { name: string; literalKey: boolean } | null {
       if (computed) return null;
@@ -254,7 +260,9 @@ export const uuidFieldNaming = createRule<[Options], MessageIds>({
       checkNameForType(node.key, keyInfo.name, type, false);
     }
 
-    function checkTSPropertySignature(node: TSESTree.TSPropertySignature): void {
+    function checkTSPropertySignature(
+      node: TSESTree.TSPropertySignature,
+    ): void {
       const keyInfo = getKeyName(node.key, node.computed);
       if (!keyInfo) return;
       if (!node.typeAnnotation) return;
@@ -381,15 +389,17 @@ export const uuidFieldNaming = createRule<[Options], MessageIds>({
       if (!keyInfo) return;
 
       const objTsNode = services.esTreeNodeToTSNodeMap.get(objectExpr);
-      const contextual = checker.getContextualType(
-        objTsNode as ts.Expression,
-      );
+      const contextual = checker.getContextualType(objTsNode as ts.Expression);
       if (!contextual) return;
       const propSymbol = contextual.getProperty(keyInfo.name);
       if (!propSymbol) return;
-      const declaration = propSymbol.valueDeclaration ?? propSymbol.declarations?.[0];
+      const declaration =
+        propSymbol.valueDeclaration ?? propSymbol.declarations?.[0];
       if (!declaration) return;
-      const propType = checker.getTypeOfSymbolAtLocation(propSymbol, declaration);
+      const propType = checker.getTypeOfSymbolAtLocation(
+        propSymbol,
+        declaration,
+      );
 
       const kind = classifyType(propType);
       if (kind === 'opaque') return;

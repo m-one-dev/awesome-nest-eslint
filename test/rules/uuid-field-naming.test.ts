@@ -392,9 +392,7 @@ ruleTester.run('uuid-field-naming', uuidFieldNaming, {
       code: `${preamble}
         class FooDto { stripeUser!: Uuid; }
       `,
-      options: [
-        { enforceReverse: true, allowNonUuidNames: ['^stripe.*$'] },
-      ],
+      options: [{ enforceReverse: true, allowNonUuidNames: ['^stripe.*$'] }],
       errors: [{ messageId: 'uuidFieldMustEndWithId' }],
     },
   ],

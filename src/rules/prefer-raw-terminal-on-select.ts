@@ -1,5 +1,9 @@
 import type { TSESTree } from '@typescript-eslint/utils';
-import { AST_NODE_TYPES, ASTUtils, ESLintUtils } from '@typescript-eslint/utils';
+import {
+  AST_NODE_TYPES,
+  ASTUtils,
+  ESLintUtils,
+} from '@typescript-eslint/utils';
 import * as ts from 'typescript';
 
 import { createRule } from '../utils/create-rule.js';
@@ -19,10 +23,7 @@ const SUGGEST_ONLY_TERMINALS: ReadonlySet<string> = new Set([
   'getManyAndCount',
 ]);
 
-const RAW_TERMINALS: ReadonlySet<string> = new Set([
-  'getRawOne',
-  'getRawMany',
-]);
+const RAW_TERMINALS: ReadonlySet<string> = new Set(['getRawOne', 'getRawMany']);
 
 const ALL_FLAGGED_TERMINALS: ReadonlySet<string> = new Set<string>([
   ...SAFE_REWRITE_MAP.keys(),
@@ -197,7 +198,8 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
         const refNode = ref.identifier as TSESTree.Identifier;
         if (refNode.range[0] >= beforeStart) continue;
         const parent = refNode.parent;
-        if (!parent || parent.type !== AST_NODE_TYPES.MemberExpression) continue;
+        if (!parent || parent.type !== AST_NODE_TYPES.MemberExpression)
+          continue;
         if (parent.computed) continue;
         if (parent.object !== refNode) continue;
         if (parent.property.type !== AST_NODE_TYPES.Identifier) continue;
@@ -223,7 +225,9 @@ export const preferRawTerminalOnSelect = createRule<[], MessageIds>({
         const method = callee.property.name;
         if (!ALL_FLAGGED_TERMINALS.has(method)) return;
 
-        const receiverTsNode = services.esTreeNodeToTSNodeMap.get(callee.object);
+        const receiverTsNode = services.esTreeNodeToTSNodeMap.get(
+          callee.object,
+        );
         const receiverType = checker.getTypeAtLocation(receiverTsNode);
         const qbInfo = analyzeReceiverType(receiverType);
 

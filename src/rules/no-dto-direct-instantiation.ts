@@ -173,7 +173,10 @@ export const noDtoDirectInstantiation = createRule<[], MessageIds>({
           fix: canFix
             ? (fixer): TSESLint.RuleFix => {
                 const dataText = sourceCode.getText(dataArg);
-                return fixer.replaceText(node, `${dtoName}.create(${dataText})`);
+                return fixer.replaceText(
+                  node,
+                  `${dtoName}.create(${dataText})`,
+                );
               }
             : null,
         });

@@ -1,5 +1,9 @@
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
-import { ASTUtils, AST_NODE_TYPES, ESLintUtils } from '@typescript-eslint/utils';
+import {
+  AST_NODE_TYPES,
+  ASTUtils,
+  ESLintUtils,
+} from '@typescript-eslint/utils';
 import * as ts from 'typescript';
 
 import { createRule } from '../utils/create-rule.js';
@@ -73,7 +77,10 @@ export const maxTypeormJoins = createRule<Options, MessageIds>({
         const decls = current.getDeclarations() ?? [];
         for (const decl of decls) {
           const fileName = decl.getSourceFile().fileName;
-          if (fileName.includes('/typeorm/') || fileName.includes('\\typeorm\\')) {
+          if (
+            fileName.includes('/typeorm/') ||
+            fileName.includes('\\typeorm\\')
+          ) {
             return true;
           }
         }

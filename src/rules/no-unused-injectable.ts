@@ -84,9 +84,7 @@ function warnOnce(key: string, message: string): void {
     return;
   }
   warnedConditions.add(key);
-  process.stderr.write(
-    `[awesome-nest/no-unused-injectable] ${message}\n`,
-  );
+  process.stderr.write(`[awesome-nest/no-unused-injectable] ${message}\n`);
 }
 
 function normalizeSlashes(p: string): string {
@@ -125,8 +123,7 @@ function lookupSourceFile(
   lookup: Map<string, ts.SourceFile>,
   filename: string,
 ): ts.SourceFile | undefined {
-  const direct =
-    lookup.get(filename) ?? lookup.get(normalizeSlashes(filename));
+  const direct = lookup.get(filename) ?? lookup.get(normalizeSlashes(filename));
   if (direct) {
     return direct;
   }
@@ -174,9 +171,7 @@ function buildReverseIndex(
   return index;
 }
 
-function loadWorkspaceProgram(
-  tsconfigPath: string,
-): WorkspaceProgram | null {
+function loadWorkspaceProgram(tsconfigPath: string): WorkspaceProgram | null {
   if (workspaceProgramCache.has(tsconfigPath)) {
     return workspaceProgramCache.get(tsconfigPath) ?? null;
   }
@@ -395,9 +390,7 @@ function findClassDeclaration(
   return result;
 }
 
-function hasRealUsage(
-  identifiers: readonly ts.Identifier[],
-): boolean {
+function hasRealUsage(identifiers: readonly ts.Identifier[]): boolean {
   for (const id of identifiers) {
     if (isClassDeclarationName(id)) {
       continue;

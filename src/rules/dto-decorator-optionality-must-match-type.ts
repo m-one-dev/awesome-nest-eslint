@@ -142,10 +142,7 @@ export const dtoDecoratorOptionalityMustMatchType = createRule<[], MessageIds>({
 
     function isInsideDtoClass(node: TSESTree.PropertyDefinition): boolean {
       const parent = node.parent;
-      if (
-        parent?.type !== AST_NODE_TYPES.ClassBody ||
-        !parent.parent
-      ) {
+      if (parent?.type !== AST_NODE_TYPES.ClassBody || !parent.parent) {
         return false;
       }
       const classNode = parent.parent;

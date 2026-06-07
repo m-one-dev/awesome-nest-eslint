@@ -6,10 +6,7 @@ import { noUnusedInjectable } from '../../src/rules/no-unused-injectable.js';
 
 const fixturesDir = path.resolve(import.meta.dirname, '..', 'fixtures');
 const ruleFixturesDir = path.join(fixturesDir, 'no-unused-injectable');
-const multiFixturesDir = path.join(
-  fixturesDir,
-  'no-unused-injectable-multi',
-);
+const multiFixturesDir = path.join(fixturesDir, 'no-unused-injectable-multi');
 const multiWorkspaceTsconfig = path.join(multiFixturesDir, 'tsconfig.json');
 const multiLibDir = path.join(multiFixturesDir, 'lib');
 
@@ -18,9 +15,7 @@ function readFixture(name: string): { filename: string; code: string } {
   return { filename, code: fs.readFileSync(filename, 'utf8') };
 }
 
-function readMultiLibFixture(
-  name: string,
-): { filename: string; code: string } {
+function readMultiLibFixture(name: string): { filename: string; code: string } {
   const filename = path.join(multiLibDir, 'src', name);
   return { filename, code: fs.readFileSync(filename, 'utf8') };
 }

@@ -117,7 +117,10 @@ function evaluateStringValue(
       return { kind: 'literal', value: value.quasis[0]!.value.cooked ?? '' };
     }
 
-    return { kind: 'non-literal', description: 'template literal with expressions' };
+    return {
+      kind: 'non-literal',
+      description: 'template literal with expressions',
+    };
   }
 
   if (value.type === AST_NODE_TYPES.Identifier) {
@@ -226,7 +229,7 @@ export const requireApiEndpointDocs = createRule<[Options], MessageIds>({
   create(context, [rawOptions]) {
     const successResponseDecorators = new Set(
       rawOptions.successResponseDecorators &&
-      rawOptions.successResponseDecorators.length > 0
+        rawOptions.successResponseDecorators.length > 0
         ? rawOptions.successResponseDecorators
         : DEFAULT_SUCCESS_RESPONSE_DECORATORS,
     );
@@ -346,13 +349,7 @@ export const requireApiEndpointDocs = createRule<[Options], MessageIds>({
         }
       }
 
-      if (!apiOperation) {
-        context.report({
-          node: method.key,
-          messageId: 'missingApiOperation',
-          data: { controller: controllerName, method: methodName },
-        });
-      } else {
+      if (apiOperation) {
         checkLiteralProperty(
           apiOperation,
           'description',
@@ -368,6 +365,12 @@ export const requireApiEndpointDocs = createRule<[Options], MessageIds>({
             methodName,
           );
         }
+      } else {
+        context.report({
+          node: method.key,
+          messageId: 'missingApiOperation',
+          data: { controller: controllerName, method: methodName },
+        });
       }
 
       if (successResponses.length === 0) {

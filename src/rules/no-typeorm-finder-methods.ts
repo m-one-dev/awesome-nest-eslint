@@ -10,7 +10,12 @@ type MessageIds = 'bannedMethod';
 // method classification
 // ---------------------------------------------------------------------------
 
-type Terminal = 'getOne' | 'getMany' | 'getManyAndCount' | 'getCount' | 'getExists';
+type Terminal =
+  | 'getOne'
+  | 'getMany'
+  | 'getManyAndCount'
+  | 'getCount'
+  | 'getExists';
 
 const TERMINAL_BY_METHOD: ReadonlyMap<string, Terminal> = new Map([
   ['find', 'getMany'],
@@ -94,7 +99,10 @@ interface OperatorSpec {
   build: (a: OperatorBuildArgs) => string;
 }
 
-const OPERATORS: ReadonlyMap<string, OperatorSpec> = new Map<string, OperatorSpec>([
+const OPERATORS: ReadonlyMap<string, OperatorSpec> = new Map<
+  string,
+  OperatorSpec
+>([
   [
     'Equal',
     {
@@ -302,7 +310,10 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
         const declarations = current.getDeclarations() ?? [];
         for (const decl of declarations) {
           const fileName = decl.getSourceFile().fileName;
-          if (fileName.includes('/typeorm/') || fileName.includes('\\typeorm\\')) {
+          if (
+            fileName.includes('/typeorm/') ||
+            fileName.includes('\\typeorm\\')
+          ) {
             return true;
           }
         }
@@ -365,7 +376,12 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
         return null;
       }
       const name = node.callee.name;
-      if (!OPERATORS.has(name) && name !== 'Not' && name !== 'Raw' && name !== 'Or') {
+      if (
+        !OPERATORS.has(name) &&
+        name !== 'Not' &&
+        name !== 'Raw' &&
+        name !== 'Or'
+      ) {
         return null;
       }
       const tsNode = services.esTreeNodeToTSNodeMap.get(node.callee);
@@ -380,7 +396,9 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
     // alias derivation
     // -----------------------------------------------------------------------
 
-    function deriveAliasFromRepoReceiver(receiver: TSESTree.Expression): string {
+    function deriveAliasFromRepoReceiver(
+      receiver: TSESTree.Expression,
+    ): string {
       let raw: string | null = null;
       if (receiver.type === AST_NODE_TYPES.Identifier) {
         raw = receiver.name;
@@ -740,7 +758,14 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
             return false;
           }
           if (
-            !translateAndGroup(value, rel.alias, path, relsByPath, params, branch)
+            !translateAndGroup(
+              value,
+              rel.alias,
+              path,
+              relsByPath,
+              params,
+              branch,
+            )
           ) {
             return false;
           }
@@ -775,7 +800,8 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
           name: paramName,
           valueText,
           isShorthand:
-            value.type === AST_NODE_TYPES.Identifier && value.name === paramName,
+            value.type === AST_NODE_TYPES.Identifier &&
+            value.name === paramName,
         });
       }
       return true;
@@ -830,7 +856,8 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
           name: paramName,
           valueText,
           isShorthand:
-            inner.type === AST_NODE_TYPES.Identifier && inner.name === paramName,
+            inner.type === AST_NODE_TYPES.Identifier &&
+            inner.name === paramName,
         });
         return true;
       }
@@ -1162,9 +1189,7 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
 
     function translateWithDeleted(nodeRaw: TSESTree.Node): boolean {
       const node = unwrap(nodeRaw);
-      return (
-        node.type === AST_NODE_TYPES.Literal && node.value === true
-      );
+      return node.type === AST_NODE_TYPES.Literal && node.value === true;
     }
 
     interface CacheCall {
@@ -1422,7 +1447,9 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
       }
 
       const lines: string[] = [];
-      lines.push(`${ctx.receiverPrefix}.createQueryBuilder('${ctx.rootAlias}')`);
+      lines.push(
+        `${ctx.receiverPrefix}.createQueryBuilder('${ctx.rootAlias}')`,
+      );
 
       if (relations) {
         for (const j of relations.joins) {
@@ -1448,19 +1475,20 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
               const fMethod = fIdx === 0 ? 'where' : 'andWhere';
               const fragBindings = bindingsForFragment(branch, fIdx);
               const paramObj = paramObjectText(fragBindings);
-              const argList = paramObj
-                ? `'${frag}', ${paramObj}`
-                : `'${frag}'`;
+              const argList = paramObj ? `'${frag}', ${paramObj}` : `'${frag}'`;
               lines.push(`      .${fMethod}(${argList})`);
             });
             return;
           }
           // OR branch: wrap fragments in parens, single call
-          const combined = branch.fragments.length === 1
-            ? branch.fragments[0]
-            : `(${branch.fragments.join(' AND ')})`;
+          const combined =
+            branch.fragments.length === 1
+              ? branch.fragments[0]
+              : `(${branch.fragments.join(' AND ')})`;
           const paramObj = paramObjectText(branch.bindings);
-          const argList = paramObj ? `'${combined}', ${paramObj}` : `'${combined}'`;
+          const argList = paramObj
+            ? `'${combined}', ${paramObj}`
+            : `'${combined}'`;
           lines.push(`      .${method}(${argList})`);
         });
       }
@@ -1587,14 +1615,14 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
       }
 
       let opts: ExtractedOptions;
-      if (!optionsArg) {
-        opts = {};
-      } else {
+      if (optionsArg) {
         const extracted = extractOptions(optionsArg, isByMethod);
         if (!extracted) {
           return null;
         }
         opts = extracted;
+      } else {
+        opts = {};
       }
 
       return buildReplacement(
@@ -1617,7 +1645,9 @@ export const noTypeormFinderMethods = createRule<[], MessageIds>({
         if (!BANNED_METHODS.has(method)) {
           return;
         }
-        const receiverTsNode = services.esTreeNodeToTSNodeMap.get(callee.object);
+        const receiverTsNode = services.esTreeNodeToTSNodeMap.get(
+          callee.object,
+        );
         const receiverType = checker.getTypeAtLocation(receiverTsNode);
         const receiverName = resolveReceiverName(receiverType);
         if (!receiverName) {
