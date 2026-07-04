@@ -29,8 +29,8 @@ interface CheckerWithAssignability extends ts.TypeChecker {
  *   - the bare `string` primitive
  */
 function isStringEnumType(type: ts.Type): boolean {
+  // `parts` is never empty: a union has ≥2 constituents, anything else is [type].
   const parts = type.isUnion() ? type.types : [type];
-  let sawStringEnumMember = false;
   for (const part of parts) {
     if ((part.flags & ts.TypeFlags.EnumLiteral) === 0) {
       return false;
@@ -39,9 +39,8 @@ function isStringEnumType(type: ts.Type): boolean {
       // a numeric enum member — TypeScript already rejects this at a string sink
       return false;
     }
-    sawStringEnumMember = true;
   }
-  return sawStringEnumMember;
+  return true;
 }
 
 /**
@@ -85,8 +84,9 @@ function isLaunderedThroughString(
  * Skip identifiers that are not standalone value expressions — a property name
  * (`A.name` → `name`) or an object-literal key (`{ name: x }` → `name`). These
  * carry no contextual type of their own; filtering them up front avoids
- * redundant type work. Every other non-value position bails later because
- * `getContextualType` returns undefined for it.
+ * redundant type work. Other non-value positions bail later — most because
+ * `getContextualType` returns undefined for them, type-position identifiers
+ * because that call throws (absorbed by `check`'s catch).
  */
 function isNonReferenceIdentifier(node: TSESTree.Identifier): boolean {
   const parent = node.parent;
@@ -101,6 +101,32 @@ function isNonReferenceIdentifier(node: TSESTree.Identifier): boolean {
     parent.type === AST_NODE_TYPES.Property &&
     parent.key === node &&
     !parent.computed
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * True for syntactic positions that can never be a string sink: a callee is
+ * consumed as a function, a member-access receiver as an object — neither has
+ * a bare-`string` contextual type. Filtering these before `getTypeAtLocation`
+ * keeps chained calls (`repo.createQueryBuilder(…).where(…).getOne()`) from
+ * paying type resolution on every link. Computed keys (`record[x]`) are the
+ * `property`, not the `object`, so genuine index sinks are still checked.
+ */
+function isNeverSinkPosition(node: TSESTree.Expression): boolean {
+  const parent = node.parent;
+  if (
+    (parent.type === AST_NODE_TYPES.CallExpression ||
+      parent.type === AST_NODE_TYPES.NewExpression) &&
+    parent.callee === node
+  ) {
+    return true;
+  }
+  if (
+    parent.type === AST_NODE_TYPES.MemberExpression &&
+    parent.object === node
   ) {
     return true;
   }
@@ -131,6 +157,9 @@ export const noImplicitEnumToString = createRule<[], MessageIds>({
     const checker = services.program.getTypeChecker() as CheckerWithAssignability;
 
     function check(node: TSESTree.Expression): void {
+      if (isNeverSinkPosition(node)) {
+        return;
+      }
       const tsNode = services.esTreeNodeToTSNodeMap.get(node);
       const enumType = checker.getTypeAtLocation(tsNode);
       if (!isStringEnumType(enumType)) {
