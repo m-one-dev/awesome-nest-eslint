@@ -6,7 +6,9 @@ import { controllerFilesConfig, globalRuleOptions } from './rule-options.js';
 
 const PLUGIN_NAME = 'awesome-nest';
 
-export function buildAll(plugin: TSESLint.FlatConfig.Plugin): TSESLint.FlatConfig.ConfigArray {
+export function buildAll(
+  plugin: TSESLint.FlatConfig.Plugin,
+): TSESLint.FlatConfig.ConfigArray {
   return [
     {
       name: `${PLUGIN_NAME}/all`,
@@ -25,7 +27,9 @@ export function buildAll(plugin: TSESLint.FlatConfig.Plugin): TSESLint.FlatConfi
       files: [...controllerFilesConfig.files],
       ignores: [...controllerFilesConfig.ignores],
       rules: Object.fromEntries(
-        Object.entries(controllerFilesConfig.ruleOptions).map(([name, opts]) => [`${PLUGIN_NAME}/${name}`, ['error', ...opts]]),
+        Object.entries(controllerFilesConfig.ruleOptions).map(
+          ([name, opts]) => [`${PLUGIN_NAME}/${name}`, ['error', ...opts]],
+        ),
       ),
     },
   ];

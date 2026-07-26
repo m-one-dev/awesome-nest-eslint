@@ -63,10 +63,10 @@ function isLaunderedThroughString(
   let hasBareString = false;
   const nonStringParts: ts.Type[] = [];
   for (const part of parts) {
-    if ((part.flags & ts.TypeFlags.String) !== 0) {
-      hasBareString = true;
-    } else {
+    if ((part.flags & ts.TypeFlags.String) === 0) {
       nonStringParts.push(part);
+    } else {
+      hasBareString = true;
     }
   }
   if (!hasBareString) {
@@ -154,7 +154,8 @@ export const noImplicitEnumToString = createRule<[], MessageIds>({
   },
   create(context) {
     const services = ESLintUtils.getParserServices(context);
-    const checker = services.program.getTypeChecker() as CheckerWithAssignability;
+    const checker =
+      services.program.getTypeChecker() as CheckerWithAssignability;
 
     function check(node: TSESTree.Expression): void {
       if (isNeverSinkPosition(node)) {

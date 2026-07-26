@@ -143,9 +143,7 @@ ruleTester.run('no-implicit-enum-to-string', noImplicitEnumToString, {
         function getName(x: string) {}
         getName(A.name);
       `,
-      errors: [
-        { messageId: 'implicitEnumToString', data: { enumType: 'A' } },
-      ],
+      errors: [{ messageId: 'implicitEnumToString', data: { enumType: 'A' } }],
     },
     {
       name: 'invalid: method argument',
