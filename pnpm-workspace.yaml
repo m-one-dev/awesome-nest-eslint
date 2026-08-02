@@ -1,0 +1,4 @@
+# Supply-chain hardening — see docs/adr/0033-dependency-installs-gate-on-release-age.md
+# Refuse dependency versions published within the last 7 days.
+# pnpm's unit is MINUTES (npm's min-release-age is DAYS). 10080 = 7 days.
+minimumReleaseAge: 10080
