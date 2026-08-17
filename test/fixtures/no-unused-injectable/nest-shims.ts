@@ -58,3 +58,6 @@ export interface OnApplicationBootstrap {
 
 export class PassportStrategy {}
 export class BaseExceptionFilter {}
+
+export const APP_INTERCEPTOR = 'APP_INTERCEPTOR';
+export const SOME_TOKEN = 'SOME_TOKEN';

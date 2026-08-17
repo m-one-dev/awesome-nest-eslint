@@ -15,9 +15,9 @@ export interface Options {
 }
 
 const INJECTABLE_DECORATOR = 'Injectable';
-const MODULE_DECORATOR = 'Module';
 const DEFAULT_WORKSPACE_TSCONFIG = 'tsconfig.eslint.json';
-const TINY_PROGRAM_THRESHOLD = 5;
+const INJECT_PROPERTY = 'inject';
+const PROVIDE_PROPERTY = 'provide';
 
 const BUILTIN_EXEMPT_METHOD_DECORATORS = new Set<string>([
   'MessagePattern',
@@ -62,7 +62,6 @@ interface WorkspaceProgram {
   checker: ts.TypeChecker;
   sourceFileLookup: Map<string, ts.SourceFile>;
   reverseIndex: Map<ts.Symbol, ReverseIndexEntry>;
-  fileCount: number;
 }
 
 const workspaceProgramCache = new Map<string, WorkspaceProgram | null>();
@@ -171,7 +170,37 @@ function buildReverseIndex(
   return index;
 }
 
-function loadWorkspaceProgram(tsconfigPath: string): WorkspaceProgram | null {
+/**
+ * Walks up from `tsconfigPath` looking for another config of the same name.
+ * Returns the outermost match, or null when this config is already the widest.
+ *
+ * A hit means the resolved program is a subset of an available wider one —
+ * the shape of a monorepo package linted with its own cwd, where every
+ * cross-package injection site is invisible and injected services therefore
+ * look unused.
+ */
+function findWiderTsconfig(tsconfigPath: string): string | null {
+  const basename = path.basename(tsconfigPath);
+  let dir = path.dirname(path.resolve(tsconfigPath));
+  let widest: string | null = null;
+
+  for (;;) {
+    const parent = path.dirname(dir);
+    if (parent === dir) {
+      return widest;
+    }
+    dir = parent;
+    const candidate = path.join(dir, basename);
+    if (fs.existsSync(candidate)) {
+      widest = candidate;
+    }
+  }
+}
+
+function loadWorkspaceProgram(
+  tsconfigPath: string,
+  isDefaultResolution: boolean,
+): WorkspaceProgram | null {
   if (workspaceProgramCache.has(tsconfigPath)) {
     return workspaceProgramCache.get(tsconfigPath) ?? null;
   }
@@ -214,12 +243,18 @@ function loadWorkspaceProgram(tsconfigPath: string): WorkspaceProgram | null {
     .getSourceFiles()
     .filter((f) => !f.isDeclarationFile).length;
 
-  if (fileCount < TINY_PROGRAM_THRESHOLD) {
-    warnOnce(
-      `tiny-program:${tsconfigPath}`,
-      `workspace program at ${tsconfigPath} contains only ${fileCount} non-declaration file(s); cross-project detection may misfire. Check the workspaceTsconfigPath option.`,
-    );
+  // Only meaningful when we picked this config ourselves. An explicit
+  // workspaceTsconfigPath is a deliberate choice, not an accident of cwd.
+  if (isDefaultResolution) {
+    const wider = findWiderTsconfig(tsconfigPath);
+    if (wider) {
+      warnOnce(
+        `narrow-tsconfig:${tsconfigPath}`,
+        `resolved ${tsconfigPath} from the working directory, but a wider ${path.basename(tsconfigPath)} exists at ${wider}. Usages outside ${path.dirname(tsconfigPath)} are invisible to this program, so injected services can be reported as unused. Set the workspaceTsconfigPath option to the wider config.`,
+      );
+    }
   }
+
   debug(
     `loaded workspace program from ${tsconfigPath}: ${fileCount} files, ${reverseIndex.size} indexed symbols`,
   );
@@ -229,7 +264,6 @@ function loadWorkspaceProgram(tsconfigPath: string): WorkspaceProgram | null {
     checker,
     sourceFileLookup,
     reverseIndex,
-    fileCount,
   };
   workspaceProgramCache.set(tsconfigPath, result);
   return result;
@@ -328,22 +362,47 @@ function classIsExempt(
   return false;
 }
 
-function isInsideModuleRegistrationArray(node: ts.Node): boolean {
-  let current: ts.Node | undefined = node.parent;
-  while (current) {
-    if (ts.isArrayLiteralExpression(current)) {
-      return true;
-    }
-    if (
-      ts.isCallExpression(current) &&
-      ts.isIdentifier(current.expression) &&
-      current.expression.text === MODULE_DECORATOR
-    ) {
-      return true;
-    }
-    current = current.parent;
+function getPropertyAssignmentName(node: ts.PropertyAssignment): string | null {
+  const { name } = node;
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) {
+    return name.text;
   }
-  return false;
+  return null;
+}
+
+/**
+ * True when this reference only *registers* the class rather than consuming it.
+ *
+ * Registration means the identifier sits directly in a list — `providers: [X]`,
+ * `exports: [X]`, or a `Provider[]` const later spread into a module — or is a
+ * `provide:` token. Everything else is consumption, which deliberately includes
+ * `useClass:` / `useExisting:` and the `inject: [...]` array of a `useFactory`
+ * provider: those name the class because something actually instantiates or
+ * receives it.
+ *
+ * Only the *immediate* parent is inspected. Walking further up would swallow
+ * `{ provide: TOKEN, useClass: X }`, because that object literal lives inside
+ * the surrounding `providers` array.
+ */
+function isRegistrationOnlyReference(node: ts.Node): boolean {
+  const parent = node.parent;
+  if (!parent) {
+    return false;
+  }
+
+  if (ts.isArrayLiteralExpression(parent)) {
+    const arrayParent = parent.parent;
+    const isInjectArray =
+      arrayParent !== undefined &&
+      ts.isPropertyAssignment(arrayParent) &&
+      getPropertyAssignmentName(arrayParent) === INJECT_PROPERTY;
+    return !isInjectArray;
+  }
+
+  return (
+    ts.isPropertyAssignment(parent) &&
+    getPropertyAssignmentName(parent) === PROVIDE_PROPERTY
+  );
 }
 
 function isImportSpecifierLike(identifier: ts.Identifier): boolean {
@@ -398,7 +457,7 @@ function hasRealUsage(identifiers: readonly ts.Identifier[]): boolean {
     if (isImportSpecifierLike(id)) {
       continue;
     }
-    if (isInsideModuleRegistrationArray(id)) {
+    if (isRegistrationOnlyReference(id)) {
       continue;
     }
     return true;
@@ -443,6 +502,7 @@ export const noUnusedInjectable = createRule<[Options], MessageIds>({
   create(context, [rawOptions]) {
     const exemptDecorators = new Set(rawOptions.exemptDecorators ?? []);
     const exemptInterfaces = new Set(rawOptions.exemptInterfaces ?? []);
+    const isDefaultResolution = rawOptions.workspaceTsconfigPath === undefined;
     const workspaceTsconfigOption =
       rawOptions.workspaceTsconfigPath ?? DEFAULT_WORKSPACE_TSCONFIG;
 
@@ -466,7 +526,10 @@ export const noUnusedInjectable = createRule<[Options], MessageIds>({
           return;
         }
 
-        const workspace = loadWorkspaceProgram(resolvedWorkspaceTsconfig);
+        const workspace = loadWorkspaceProgram(
+          resolvedWorkspaceTsconfig,
+          isDefaultResolution,
+        );
 
         if (workspace) {
           const sourceFile = lookupSourceFile(

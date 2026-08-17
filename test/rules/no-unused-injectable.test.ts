@@ -90,6 +90,18 @@ ruleTester.run('no-unused-injectable', noUnusedInjectable, {
       languageOptions: multiLibLanguageOptions,
       options: [{ workspaceTsconfigPath: multiWorkspaceTsconfig }],
     },
+    {
+      name: 'valid: consumed via useClass inside a @Module providers array',
+      ...readFixture('valid-use-class.interceptor.ts'),
+    },
+    {
+      name: 'valid: consumed via the inject array of a useFactory provider',
+      ...readFixture('valid-factory-inject.service.ts'),
+    },
+    {
+      name: 'valid: consumed via useExisting inside a @Module providers array',
+      ...readFixture('valid-use-existing.service.ts'),
+    },
   ],
   invalid: [
     {
@@ -126,6 +138,16 @@ ruleTester.run('no-unused-injectable', noUnusedInjectable, {
         {
           messageId: 'unusedInjectable',
           data: { className: 'ProvidersArrayVarService' },
+        },
+      ],
+    },
+    {
+      name: 'invalid: only named as a provide: token, never injected',
+      ...readFixture('invalid-provide-token-only.service.ts'),
+      errors: [
+        {
+          messageId: 'unusedInjectable',
+          data: { className: 'ProvideTokenOnlyService' },
         },
       ],
     },

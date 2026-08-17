@@ -23,6 +23,23 @@ The rule flags any `@Injectable()`-decorated **named** class declaration whose
 class symbol has no references **outside** an `@Module({...})` decorator's
 `providers`, `exports`, or `imports` arrays.
 
+A reference counts as *registration* (and so does not save the class) only when
+the identifier is a direct element of an array — `providers: [X]`, `exports: [X]`,
+or a `Provider[]` const later spread into a module — or when it is the value of a
+`provide:` property, which names an injection token rather than consuming the
+class. Every other reference counts as consumption, including:
+
+```ts
+@Module({
+  providers: [
+    { provide: APP_INTERCEPTOR, useClass: MyInterceptor },   // consumption
+    { provide: TOKEN, useExisting: MyService },              // consumption
+    { provide: TOKEN, useFactory: fn, inject: [MyService] }, // consumption
+  ],
+})
+export class MyModule {}
+```
+
 A class is exempt if any of the following hold (these are framework
 entry-points NestJS invokes directly without anyone "injecting" them):
 
@@ -84,6 +101,7 @@ type Options = [
   {
     exemptDecorators?: string[];
     exemptInterfaces?: string[];
+    workspaceTsconfigPath?: string;
   },
 ];
 ```
@@ -94,7 +112,50 @@ type Options = [
 - `exemptInterfaces` — additional `implements` interface names that exempt a
   class.
 
-Both options are additive on top of the built-in lists.
+`exemptDecorators` and `exemptInterfaces` are additive on top of the built-in
+lists.
+
+- `workspaceTsconfigPath` — the tsconfig whose program defines "anywhere".
+  Defaults to `tsconfig.eslint.json` **resolved against `context.cwd`**.
+
+### `workspaceTsconfigPath` and monorepos
+
+**In a monorepo, set this explicitly.** The rule can only see usages inside the
+program it loads, so a class declared in a shared library and injected in a
+sibling package is invisible unless both are in that program.
+
+The default resolves against `context.cwd`, which is not stable: an editor's
+ESLint integration and a per-package `lint` script typically run from the
+*package* directory, picking up that package's narrow `tsconfig.eslint.json`
+rather than the repo-wide one. Every shared provider then looks unused. The rule
+warns once on stderr when it defaults to a config that has a wider one of the
+same name above it, but the warning is easy to miss — pin the path instead:
+
+```js
+// eslint.config.js at the repo root
+import path from 'node:path';
+
+export default [
+  {
+    rules: {
+      'awesome-nest/no-unused-injectable': [
+        'error',
+        {
+          workspaceTsconfigPath: path.resolve(
+            import.meta.dirname,
+            'tsconfig.eslint.json',
+          ),
+        },
+      ],
+    },
+  },
+];
+```
+
+`import.meta.dirname` is the config file's own directory, so the path stays
+correct no matter where ESLint was invoked from — including from configs in
+sub-packages that re-export the root one. Setting the option also suppresses the
+narrow-tsconfig warning, since an explicit path is a deliberate choice.
 
 ## Requirements
 
