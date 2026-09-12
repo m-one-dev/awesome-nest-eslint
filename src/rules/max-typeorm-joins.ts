@@ -179,45 +179,37 @@ export const maxTypeormJoins = createRule<Options, MessageIds>({
       TSESTree.CallExpression | null
     >();
 
+    // Walks down to whatever the chain is rooted in: the createQueryBuilder call
+    // when it is inline, otherwise the deepest node — usually the identifier
+    // holding the builder, which the caller resolves.
     // .subQuery() opens a nested builder scope; stop the inward walk there so
     // joins inside subqueries aren't attributed to the outer createQueryBuilder.
-    function findCreateQueryBuilderOrigin(
-      exprRaw: TSESTree.Node,
-    ): TSESTree.CallExpression | null {
-      const cached = originCache.get(exprRaw);
-      if (cached !== undefined) {
-        return cached;
-      }
+    function chainRoot(exprRaw: TSESTree.Node): TSESTree.Node | null {
       let current: TSESTree.Node = unwrapChain(exprRaw);
-      let result: TSESTree.CallExpression | null = null;
       while (true) {
         if (current.type === AST_NODE_TYPES.CallExpression) {
           if (isCreateQueryBuilderCall(current)) {
-            result = current;
-            break;
+            return current;
           }
           const callee = current.callee;
+          if (callee.type !== AST_NODE_TYPES.MemberExpression) {
+            return null;
+          }
           if (
-            callee.type === AST_NODE_TYPES.MemberExpression &&
             callee.property.type === AST_NODE_TYPES.Identifier &&
             callee.property.name === 'subQuery'
           ) {
-            break;
+            return null;
           }
-          if (callee.type === AST_NODE_TYPES.MemberExpression) {
-            current = unwrapChain(callee.object);
-            continue;
-          }
-          break;
+          current = unwrapChain(callee.object);
+          continue;
         }
         if (current.type === AST_NODE_TYPES.MemberExpression) {
           current = unwrapChain(current.object);
           continue;
         }
-        break;
+        return current;
       }
-      originCache.set(exprRaw, result);
-      return result;
     }
 
     function findOriginForIdentifier(
@@ -239,21 +231,33 @@ export const maxTypeormJoins = createRule<Options, MessageIds>({
       if (!init) {
         return null;
       }
-      return findCreateQueryBuilderOrigin(init);
+      return findReceiverOrigin(init);
     }
 
+    // A chain may be written inline off createQueryBuilder, or off a local
+    // holding the builder — and in the latter case every join past the first has
+    // a *call* as its receiver, not the identifier, so the walk has to reach the
+    // bottom before resolving. Resolving only an immediate identifier receiver
+    // counts the first join of such a chain and silently drops the rest.
     function findReceiverOrigin(
       receiver: TSESTree.Node,
     ): TSESTree.CallExpression | null {
       const unwrapped = unwrapChain(receiver);
-      const chainOrigin = findCreateQueryBuilderOrigin(unwrapped);
-      if (chainOrigin) {
-        return chainOrigin;
+      const cached = originCache.get(unwrapped);
+      if (cached !== undefined) {
+        return cached;
       }
-      if (unwrapped.type === AST_NODE_TYPES.Identifier) {
-        return findOriginForIdentifier(unwrapped);
+      // Guards against a self-referential declarator (`const qb = qb.join(…)`).
+      originCache.set(unwrapped, null);
+      const root = chainRoot(unwrapped);
+      let result: TSESTree.CallExpression | null = null;
+      if (root?.type === AST_NODE_TYPES.CallExpression) {
+        result = root;
+      } else if (root?.type === AST_NODE_TYPES.Identifier) {
+        result = findOriginForIdentifier(root);
       }
-      return null;
+      originCache.set(unwrapped, result);
+      return result;
     }
 
     const joinCounts = new Map<TSESTree.CallExpression, number>();

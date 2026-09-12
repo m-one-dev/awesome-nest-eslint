@@ -15,6 +15,7 @@ export function buildRecommended(
       rules: {
         [`${PLUGIN_NAME}/no-typeorm-finder-methods`]: 'error',
         [`${PLUGIN_NAME}/max-typeorm-joins`]: 'error',
+        [`${PLUGIN_NAME}/valid-typeorm-join-path`]: 'error',
         [`${PLUGIN_NAME}/prefer-raw-terminal-on-select`]: 'error',
         [`${PLUGIN_NAME}/require-api-endpoint-docs`]: [
           'error',

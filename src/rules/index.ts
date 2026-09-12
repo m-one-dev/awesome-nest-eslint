@@ -19,6 +19,7 @@ import { requireUseDtoDecorator } from './require-use-dto-decorator.js';
 import { swaggerMatchesReturnType } from './swagger-matches-return-type.js';
 import { uniqueEndpointDtos } from './unique-endpoint-dtos.js';
 import { uuidFieldNaming } from './uuid-field-naming.js';
+import { validTypeormJoinPath } from './valid-typeorm-join-path.js';
 
 export const rules = {
   'dto-decorator-optionality-must-match-type':
@@ -43,6 +44,7 @@ export const rules = {
   'swagger-matches-return-type': swaggerMatchesReturnType,
   'unique-endpoint-dtos': uniqueEndpointDtos,
   'uuid-field-naming': uuidFieldNaming,
+  'valid-typeorm-join-path': validTypeormJoinPath,
 } as const;
 
 export type RuleName = keyof typeof rules;

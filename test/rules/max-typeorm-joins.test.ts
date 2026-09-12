@@ -109,6 +109,20 @@ ruleTester.run('max-typeorm-joins', maxTypeormJoins, {
       `,
     },
     {
+      name: 'valid: chain off a local var totaling 3 counts them all',
+      filename: testFilename,
+      code: `${preamble}
+        class S {
+          constructor(private readonly userRepository: Repository<User>) {}
+          async list() {
+            const qb = this.userRepository.createQueryBuilder('user');
+            qb.leftJoin('user.a', 'a').leftJoin('user.b', 'b').leftJoin('user.c', 'c');
+            return qb.getMany();
+          }
+        }
+      `,
+    },
+    {
       name: 'valid: non-TypeORM object with leftJoin method',
       filename: testFilename,
       code: `${preamble}
@@ -205,6 +219,24 @@ ruleTester.run('max-typeorm-joins', maxTypeormJoins, {
   ],
 
   invalid: [
+    {
+      name: 'invalid: 4-join chain written off a local var (joins past the first must still count)',
+      filename: testFilename,
+      code: `${preamble}
+class S {
+  constructor(private readonly userRepository: Repository<User>) {}
+  async list() {
+    const qb = this.userRepository.createQueryBuilder('user');
+    qb.leftJoin('user.a', 'a')
+      .leftJoin('user.b', 'b')
+      .leftJoin('user.c', 'c')
+      .leftJoin('user.d', 'd');
+    return qb.getMany();
+  }
+}
+`,
+      errors: [{ messageId: 'tooManyJoins', data: { count: 4, max: 3 } }],
+    },
     {
       name: 'invalid: 4-join chain reports on the 4th join',
       filename: testFilename,
