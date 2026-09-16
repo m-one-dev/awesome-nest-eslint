@@ -1,3 +1,4 @@
+import { baseDtoPropertyMustExpose } from './base-dto-property-must-expose.js';
 import { dtoDecoratorOptionalityMustMatchType } from './dto-decorator-optionality-must-match-type.js';
 import { dtoMustExtendAbstractOrBase } from './dto-must-extend-abstract-or-base.js';
 import { maxTypeormJoins } from './max-typeorm-joins.js';
@@ -22,6 +23,7 @@ import { uuidFieldNaming } from './uuid-field-naming.js';
 import { validTypeormJoinPath } from './valid-typeorm-join-path.js';
 
 export const rules = {
+  'base-dto-property-must-expose': baseDtoPropertyMustExpose,
   'dto-decorator-optionality-must-match-type':
     dtoDecoratorOptionalityMustMatchType,
   'dto-must-extend-abstract-or-base': dtoMustExtendAbstractOrBase,

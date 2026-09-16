@@ -88,6 +88,7 @@ export function buildRecommended(
       name: `${PLUGIN_NAME}/recommended-dto`,
       files: ['**/*.dto.ts', '**/dto/**/*.ts'],
       rules: {
+        [`${PLUGIN_NAME}/base-dto-property-must-expose`]: 'error',
         [`${PLUGIN_NAME}/dto-must-extend-abstract-or-base`]: 'error',
         [`${PLUGIN_NAME}/no-api-property-decorator`]: 'error',
       },
@@ -106,7 +107,7 @@ export function buildRecommended(
       ignores: [...controllerFilesConfig.ignores],
       rules: Object.fromEntries(
         Object.entries(controllerFilesConfig.ruleOptions).map(
-          ([name, opts]) => [`${PLUGIN_NAME}/${name}`, ['error', ...opts!]],
+          ([name, opts]) => [`${PLUGIN_NAME}/${name}`, ['error', ...opts]],
         ),
       ),
     },

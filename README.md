@@ -34,6 +34,7 @@ export default defineConfig(
 | `awesome-nest/unique-endpoint-dtos` | error | all |
 | `awesome-nest/uuid-field-naming` | error | all |
 | `awesome-nest/dto-must-extend-abstract-or-base` | error | `**/*.dto.ts`, `**/dto/**/*.ts` |
+| `awesome-nest/base-dto-property-must-expose` | error | `**/*.dto.ts`, `**/dto/**/*.ts` |
 
 `configs.all` enables every rule at error severity, no file scoping.
 
@@ -42,6 +43,7 @@ export default defineConfig(
 - [`awesome-nest/no-typeorm-finder-methods`](./docs/rules/no-typeorm-finder-methods.md) — bans TypeORM entity-read finders, auto-fixes to `createQueryBuilder` chains.
 - [`awesome-nest/no-unused-injectable`](./docs/rules/no-unused-injectable.md) — flags `@Injectable()` services that are only registered in `@Module()` decorators (or nowhere) and never consumed.
 - [`awesome-nest/dto-must-extend-abstract-or-base`](./docs/rules/dto-must-extend-abstract-or-base.md) — DTOs must transitively extend `AbstractDto` / `BaseDto`.
+- [`awesome-nest/base-dto-property-must-expose`](./docs/rules/base-dto-property-must-expose.md) — instance properties of `BaseDto` subclasses must carry `@Expose()` or a field decorator, or `BaseDto.create()` drops them.
 - [`awesome-nest/payload-type-suffix`](./docs/rules/payload-type-suffix.md) — NATS payload types must end with `PayloadDto` / pagination DTO suffixes.
 - [`awesome-nest/unique-endpoint-dtos`](./docs/rules/unique-endpoint-dtos.md) — each endpoint slot (`@Body`, `@Query`, response) must use its own DTO across the project.
 - [`awesome-nest/uuid-field-naming`](./docs/rules/uuid-field-naming.md) — fields/parameters/locals typed as the `Uuid` brand must end with `Id`; `Uuid[]` must end with `Ids`. Optional reverse direction (`enforceReverse`) enforces the inverse with a regex-based exempt list (`allowNonUuidNames`).
